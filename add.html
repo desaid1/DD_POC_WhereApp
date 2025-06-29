@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <title>Add Thing – Static Demo</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <style>
     body { font-family: sans-serif; padding: 20px; max-width: 420px; margin: auto; background: white; color: black; }
     input, textarea, select, button {
@@ -46,9 +49,9 @@
   <div class="section">
     <h3>Location Source</h3>
     <label class="checkbox-label">
-      <input type="checkbox" id="isLocationSource"> Mark this Thing as future Location Source
+      <input type="checkbox" id="isLocationSource"> Mark this Thing as a Location Source
     </label>
-    <select>
+    <select id="locationSelect">
       <option value="mobile">Mobile</option>
       <option value="gps">GPS</option>
       <option value="qr">QR Code</option>
@@ -58,7 +61,7 @@
 
   <div class="section">
     <h3>Details</h3>
-    <input type="text" placeholder="Name">
+    <input type="text" id="thingName" placeholder="Name">
     <div id="details-container">
       <input type="text" placeholder="Key">
       <textarea placeholder="Value"></textarea>
@@ -83,10 +86,27 @@
   </div>
 
   <div style="text-align: right;">
-    <button style="background-color: #ffee85; color: #666666;" onclick="alert('Pretend this added a thing')">Add Thing</button>
+    <button style="background-color: #ffee85; color: #666666;" onclick="submitThing()">Add Thing</button>
   </div>
 
   <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAatek1caogYhCY0rXj9YrGC32E0lRJtUs",
+      authDomain: "whereapp-ideasdesai.firebaseapp.com",
+      projectId: "whereapp-ideasdesai",
+      storageBucket: "whereapp-ideasdesai.firebasestorage.app",
+      messagingSenderId: "134818032534",
+      appId: "1:134818032534:web:29c5935040df342ad00bb7"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    let userId = null;
+
+    auth.signInAnonymously().then(res => {
+      userId = res.user.uid;
+    });
+
     function setVisibility(mode) {
       const groupBtn = document.getElementById('btn-group');
       const publicBtn = document.getElementById('btn-public');
@@ -98,6 +118,7 @@
         groupBtn.style.backgroundColor = 'lightgray';
       }
     }
+
     function addDetail() {
       const container = document.getElementById('details-container');
       const keyInput = document.createElement('input');
@@ -108,12 +129,62 @@
       container.appendChild(keyInput);
       container.appendChild(valueTextarea);
     }
+
     function addMediaLink() {
       const container = document.getElementById('media-links');
       const input = document.createElement('input');
       input.type = 'url';
       input.placeholder = 'Add link to image';
       container.appendChild(input);
+    }
+
+    async function submitThing() {
+      const name = document.getElementById('thingName').value;
+      const isLocationSource = document.getElementById('isLocationSource').checked;
+      const locationType = document.getElementById('locationSelect').value;
+      const flexibutes = {};
+      const details = document.querySelectorAll('#details-container input, #details-container textarea');
+      for (let i = 0; i < details.length; i += 2) {
+        const key = details[i].value.trim();
+        const value = details[i + 1].value.trim();
+        if (key && value) flexibutes[key] = value;
+      }
+      const media = [];
+      document.querySelectorAll('#media-links input').forEach(input => {
+        if (input.value.trim()) media.push(input.value.trim());
+      });
+
+      let location = null;
+      try {
+        const pos = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject);
+        });
+        location = {
+          lat: pos.coords.latitude.toFixed(5),
+          long: pos.coords.longitude.toFixed(5),
+          source: locationType
+        };
+      } catch (e) {
+        console.warn("Location error", e);
+      }
+
+      const thing = {
+        name,
+        userId,
+        flexibutes,
+        media,
+        location,
+        isLocationSource,
+        createdAt: new Date()
+      };
+
+      try {
+        await db.collection("things").add(thing);
+        alert("✅ Thing added successfully!");
+      } catch (err) {
+        console.error("Error saving thing:", err);
+        alert("❌ Failed to save. Check console.");
+      }
     }
   </script>
 </body>
