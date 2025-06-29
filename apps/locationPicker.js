@@ -1,10 +1,10 @@
-// locationPicker.js :: v20250630002000 :: disable dropdown if adding new location source
+// locationPicker.js :: v20250630002500 :: fix async submit flow for device location
 let selectedLocation = null;
 
 function loadLocationPicker(containerId, userId, db) {
   const container = document.getElementById(containerId);
   container.innerHTML = `
-    <label for="locationSourceSelect">📍 Choose Location Source v20250630002000:</label>
+    <label for="locationSourceSelect">📍 Choose Location Source v20250630002500:</label>
     <select id="locationSourceSelect" style="margin-bottom: 10px;">
       <option value="">Select from saved location sources...</option>
     </select>
@@ -92,7 +92,6 @@ function getDeviceLocation(callback) {
   );
 }
 
-// Override location check logic to fetch device location if none selected
 window.ensureLocationSourceIsValid = function (isLocationSource, onValid) {
   const selected = getSelectedLocation();
   if (isLocationSource) {
@@ -105,21 +104,19 @@ window.ensureLocationSourceIsValid = function (isLocationSource, onValid) {
       selectedLocation = deviceLoc;
       onValid();
     });
-    return false;
+    return;
   }
   if (!selected) {
     alert("❌ Please select a Location Source from the dropdown.");
-    return false;
+    return;
   }
-  return true;
+  onValid();
 };
 
-// Intercept and modify submitThing()
 if (typeof window.submitThing === "function") {
   const originalSubmit = window.submitThing;
   window.submitThing = function () {
     const isLocationSource = document.getElementById("isLocationSource").checked;
-    const proceed = window.ensureLocationSourceIsValid(isLocationSource, originalSubmit);
-    if (proceed === true) originalSubmit();
+    window.ensureLocationSourceIsValid(isLocationSource, originalSubmit);
   };
 }
