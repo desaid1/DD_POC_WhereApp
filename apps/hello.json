@@ -1,0 +1,7 @@
+{
+  "id": "hello",
+  "label": "👋 Hello World",
+  "score": 0,
+  "useLocation": true,
+  "whatsappMessage": "Hello World!\\nIt's indeed a beautiful day at {{lat}}, {{long}}"
+}
