@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>The App – Micro App Runtime (Dynamic JSON)</title>
+  <title>WhereApp – Simplifying Sustainability</title>
   <style>
     body { font-family: sans-serif; padding: 20px; }
     button { padding: 10px 15px; margin: 10px 5px; font-size: 16px; }
@@ -12,7 +12,7 @@
   </style>
 </head>
 <body>
-  <h1>The App – Micro App Runtime (Dynamic JSON)</h1>
+  <h1> Micro App Runtime (Dynamic JSON)</h1>
 
   <div id="buttons"></div>
   <div class="score" id="score"></div>
@@ -70,10 +70,17 @@
             updateScoreDisplay();
 
             if (app.whatsappMessage) {
-              const message = app.whatsappMessage
+              let message = app.whatsappMessage
                 .replace("{{score}}", score)
                 .replace("{{lat}}", currentLat)
                 .replace("{{long}}", currentLong);
+
+              // Replace with Google Maps short link if specified in message
+              if (message.includes("{{mapLink}}")) {
+                const mapUrl = `https://maps.google.com/?q=${currentLat},${currentLong}`;
+                message = message.replace("{{mapLink}}", mapUrl);
+              }
+
               const encoded = encodeURIComponent(message);
               window.open(`https://wa.me/?text=${encoded}`);
               logAction(`${app.label} shared on WhatsApp.`);
