@@ -54,15 +54,15 @@
 
     auth.signInAnonymously().then(res => {
       userId = res.user.uid;
-      loadLocationPicker("location-picker", userId, db);
+      window.loadLocationPicker("location-picker", userId, db);
     });
 
     function testGetLocation() {
-      if (typeof getSelectedLocation !== 'function') {
+      if (typeof window.getSelectedLocation !== 'function') {
         alert("getSelectedLocation() is not available.");
         return;
       }
-      const location = getSelectedLocation();
+      const location = window.getSelectedLocation();
       document.getElementById('result').innerText = JSON.stringify(location, null, 2);
     }
   </script>
