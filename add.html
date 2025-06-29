@@ -1,190 +1,110 @@
+<!-- add.html (with integrated location picker) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Add WhereApp</title>
+  <title>Add New Thing</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script defer src="apps/locationPicker.js"></script>
   <style>
-    body { font-family: sans-serif; padding: 20px; max-width: 420px; margin: auto; background: white; color: black; }
-    input, textarea, select, button {
-      width: 100%; margin: 10px 0; padding: 10px;
-      font-size: 16px; border-radius: 8px; border: 2px solid #A8D5BA;
-    }
-    button {
-      background-color: #A8D5BA; color: white; border: none; cursor: pointer;
-    }
-    button:hover { background-color: #91c3aa; }
-    .section { margin-bottom: 30px; }
-    .checkbox-label {
-      font-weight: bold;
-      display: block;
-      margin-top: -5px;
-    }
-    .checkbox-label input {
-      width: auto;
-      margin-right: 10px;
-    }
+    body { font-family: sans-serif; max-width: 500px; margin: auto; padding: 20px; }
+    input, select, button, textarea { width: 100%; margin: 10px 0; padding: 8px; box-sizing: border-box; }
+    .smart-bar { position: relative; }
+    .smart-bar input { padding-right: 40px; }
+    .smart-bar .qr-icon { position: absolute; right: 10px; top: 8px; font-size: 18px; cursor: pointer; }
+    .section { margin-bottom: 20px; }
   </style>
 </head>
 <body>
-  <h2>Add 2506291458</h2>
+  <h2>Add New Thing</h2>
+
+  <input id="thing-name" placeholder="Enter Thing Name..." />
 
   <div class="section">
-    <input type="search" placeholder="Search, Scan, Upload to add existing...">
-    <p><em>Item Not Found. Would you like to create a new item?</em></p>
-    <button>Create New Item</button>
-  </div>
-
-  <div class="section">
-    <h3>Sharing</h3>
-    <div id="visibility-toggle" style="display: flex; gap: 10px;">
-      <button id="btn-group" onclick="setVisibility('group')">Group</button>
-      <button id="btn-public" onclick="setVisibility('public')">Public</button>
-    </div>
-  </div>
-
-  <div class="section">
-    <h3>Location Source</h3>
-    <label class="checkbox-label">
-      <input type="checkbox" id="isLocationSource"> Mark this Thing as a Location Source
-    </label>
-    <select id="locationSelect">
-      <option value="mobile">Mobile</option>
-      <option value="gps">GPS</option>
-      <option value="qr">QR Code</option>
-      <option value="rfid">RFID</option>
+    <label for="visibility">Sharing</label>
+    <select id="visibility">
+      <option value="group">Group</option>
+      <option value="public">Public</option>
     </select>
   </div>
 
   <div class="section">
-    <h3>Details</h3>
-    <input type="text" id="thingName" placeholder="Name">
-    <div id="details-container">
-      <input type="text" placeholder="Key">
-      <textarea placeholder="Value"></textarea>
-    </div>
-    <button onclick="addDetail()">Add Detail</button>
+    <label><input type="checkbox" id="isLocationSource" /> Mark this Thing as a Location Source</label>
+  </div>
+
+  <div id="location-section" class="section"></div>
+
+  <div class="section">
+    <label for="details">Details (key-value)</label>
+    <textarea id="details" placeholder="eg. Hours: 9am - 9pm\nPhone: +91...\nInfo: Fresh produce daily"></textarea>
   </div>
 
   <div class="section">
-    <h3>Media</h3>
-    <div id="media-links">
-      <input type="url" placeholder="Add link to image">
-    </div>
-    <button onclick="addMediaLink()">+</button><br>
-    <label>
-      <button onclick="document.getElementById('upload-image').click(); return false;">Upload Images</button>
-    </label>
-    <input type="file" id="upload-image" accept="image/*" style="display:none">
-    <label>
-      <button onclick="document.getElementById('upload-pdf').click(); return false;">Upload Documents</button>
-    </label>
-    <input type="file" id="upload-pdf" accept="application/pdf" style="display:none">
+    <label for="mediaLinks">Media (image/document links)</label>
+    <textarea id="mediaLinks" placeholder="Paste image/document URLs, one per line"></textarea>
   </div>
 
-  <div style="text-align: right;">
-    <button style="background-color: #ffee85; color: #666666;" onclick="submitThing()">Add Thing</button>
-  </div>
+  <button onclick="submitThing()">Add Thing</button>
 
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyAatek1caogYhCY0rXj9YrGC32E0lRJtUs",
       authDomain: "whereapp-ideasdesai.firebaseapp.com",
-      projectId: "whereapp-ideasdesai",
-      storageBucket: "whereapp-ideasdesai.firebasestorage.app",
-      messagingSenderId: "134818032534",
-      appId: "1:134818032534:web:29c5935040df342ad00bb7"
+      projectId: "whereapp-ideasdesai"
     };
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
+
     let userId = null;
 
     auth.signInAnonymously().then(res => {
       userId = res.user.uid;
+      if (typeof window.loadLocationPicker === 'function') {
+        window.loadLocationPicker("location-section", userId, db);
+      }
     });
 
-    function setVisibility(mode) {
-      const groupBtn = document.getElementById('btn-group');
-      const publicBtn = document.getElementById('btn-public');
-      if (mode === 'group') {
-        groupBtn.style.backgroundColor = '#ffee85';
-        publicBtn.style.backgroundColor = 'lightgray';
-      } else {
-        publicBtn.style.backgroundColor = '#ffee85';
-        groupBtn.style.backgroundColor = 'lightgray';
-      }
-    }
+    function submitThing() {
+      const name = document.getElementById("thing-name").value.trim();
+      const visibility = document.getElementById("visibility").value;
+      const isLocationSource = document.getElementById("isLocationSource").checked;
+      const detailsRaw = document.getElementById("details").value.trim();
+      const mediaRaw = document.getElementById("mediaLinks").value.trim();
+      const location = window.getSelectedLocation ? window.getSelectedLocation() : null;
 
-    function addDetail() {
-      const container = document.getElementById('details-container');
-      const keyInput = document.createElement('input');
-      keyInput.type = 'text';
-      keyInput.placeholder = 'Key';
-      const valueTextarea = document.createElement('textarea');
-      valueTextarea.placeholder = 'Value';
-      container.appendChild(keyInput);
-      container.appendChild(valueTextarea);
-    }
-
-    function addMediaLink() {
-      const container = document.getElementById('media-links');
-      const input = document.createElement('input');
-      input.type = 'url';
-      input.placeholder = 'Add link to image';
-      container.appendChild(input);
-    }
-
-    async function submitThing() {
-      const name = document.getElementById('thingName').value;
-      const isLocationSource = document.getElementById('isLocationSource').checked;
-      const locationType = document.getElementById('locationSelect').value;
-      const flexibutes = {};
-      const details = document.querySelectorAll('#details-container input, #details-container textarea');
-      for (let i = 0; i < details.length; i += 2) {
-        const key = details[i].value.trim();
-        const value = details[i + 1].value.trim();
-        if (key && value) flexibutes[key] = value;
-      }
-      const media = [];
-      document.querySelectorAll('#media-links input').forEach(input => {
-        if (input.value.trim()) media.push(input.value.trim());
+      const details = {};
+      detailsRaw.split("\n").forEach(line => {
+        const [key, ...rest] = line.split(":");
+        if (key && rest.length > 0) details[key.trim()] = rest.join(":").trim();
       });
 
-      let location = null;
-      try {
-        const pos = await new Promise((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject);
-        });
-        location = {
-          lat: pos.coords.latitude.toFixed(5),
-          long: pos.coords.longitude.toFixed(5),
-          source: locationType
-        };
-      } catch (e) {
-        console.warn("Location error", e);
-      }
+      const media = mediaRaw.split("\n").filter(x => x.trim());
 
-      const thing = {
+      const data = {
         name,
         userId,
-        flexibutes,
-        media,
-        location,
+        visibility,
         isLocationSource,
-        createdAt: new Date()
+        createdAt: new Date().toISOString(),
+        flexibutes: details,
+        media
       };
-
-      try {
-        await db.collection("things").add(thing);
-        alert("✅ Thing added successfully!");
-      } catch (err) {
-        console.error("Error saving thing:", err);
-        alert("❌ Failed to save. Check console.");
+      if (location) {
+        data.lat = location.lat;
+        data.long = location.long;
       }
+
+      db.collection("things").add(data).then(() => {
+        alert("Thing added successfully!");
+        location.reload();
+      }).catch(err => {
+        console.error("Error saving thing:", err);
+        alert("Failed to save. Check console.");
+      });
     }
   </script>
 </body>
