@@ -1,4 +1,4 @@
-<!-- add.html — v20250629231500 -->
+<!-- add.html — v20250629232500 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -101,7 +101,7 @@
 </label>
 <input accept="application/pdf" id="upload-pdf" style="display:none" type="file"/>
 <div style="text-align: right;">
-  <button id="btn-add" style="background-color: #ffee85; color: #666666; border: none; border-radius: 8px; padding: 8px 16px; font-size: 16px; cursor: pointer;">Add Thing</button>
+  <button id="btn-add" onclick="submitThing()" style="background-color: #ffee85; color: #666666; border: none; border-radius: 8px; padding: 8px 16px; font-size: 16px; cursor: pointer;">Add Thing</button>
 </div>
 </section>
 </div>
@@ -145,6 +145,52 @@ function addMediaLink() {
   const div = document.createElement("div");
   div.innerHTML = `<input placeholder="Add link to image" type="url"/>`;
   container.appendChild(div);
+}
+
+function getSelectedLocation() {
+  if (typeof window.getSelectedLocation === 'function') {
+    return window.getSelectedLocation();
+  }
+  return null;
+}
+
+function submitThing() {
+  const name = document.querySelector("input[placeholder='Name']").value.trim();
+  if (!name) return alert("Please enter a name.");
+
+  const details = [];
+  document.querySelectorAll("#details-container > div").forEach(div => {
+    const key = div.querySelector("input").value.trim();
+    const val = div.querySelector("textarea").value.trim();
+    if (key && val) details.push({ key, val });
+  });
+
+  const media = [];
+  document.querySelectorAll("#media-links input[type='url']").forEach(input => {
+    const url = input.value.trim();
+    if (url) media.push(url);
+  });
+
+  const isLocationSource = document.getElementById("isLocationSource").checked;
+  const location = getSelectedLocation();
+
+  const thing = {
+    name,
+    details,
+    media,
+    isLocationSource,
+    location,
+    visibility,
+    userId,
+    createdAt: new Date().toISOString()
+  };
+
+  db.collection("things").add(thing)
+    .then(() => alert("✅ Thing added successfully!"))
+    .catch(e => {
+      console.error("Error adding thing:", e);
+      alert("❌ Failed to add thing.");
+    });
 }
 </script>
 </body>
