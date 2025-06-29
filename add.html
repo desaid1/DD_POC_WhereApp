@@ -1,193 +1,140 @@
-<!-- add.html (Version 20250629193500 IST - Final UI with Smart Location Picker) -->
+<!-- add.html — v20250629195500 -->
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Add Version 10.2</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script defer src="apps/locationPicker.js"></script>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      max-width: 700px;
-      margin: 30px auto;
-      padding: 20px;
-      background: #f5f5f5;
-      border-radius: 12px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-    }
-    h2 {
-      text-align: center;
-      color: #333;
-    }
-    label {
-      font-weight: bold;
-    }
-    input, select, button, textarea {
-      width: 100%;
-      margin-top: 6px;
-      margin-bottom: 16px;
+<meta charset="utf-8"/>
+<title>Add Thing</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script defer="" src="apps/locationPicker.js"></script>
+<style>
+    * { box-sizing: border-box; }
+    body { font-family: sans-serif; margin: 0; padding: 0; background-color: white; color: black; }
+    nav {
+      background: #007BFF;
       padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    nav a {
+      color: white;
+      text-decoration: none;
+      margin: 5px 10px;
+      font-size: 14px;
+    }
+    section {
+      padding: 30px 20px;
+      max-width: 420px;
+      margin: auto;
+      border-bottom: 1px solid #ccc;
+    }
+    h2, h3 {
+      text-align: left;
+      font-size: 18px;
+    }
+    input, textarea, select {
+      background-color: white;
+      color: black;
+      border: 2px solid #A8D5BA;
+      border-radius: 8px;
+      padding: 8px 16px;
       font-size: 16px;
-      box-sizing: border-box;
+      margin-bottom: 12px;
+      width: 100%;
     }
     button {
-      background: #2d89ef;
+      background-color: #A8D5BA;
       color: white;
       border: none;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
       cursor: pointer;
-      transition: background 0.3s ease;
+      margin-bottom: 12px;
+      white-space: nowrap;
     }
     button:hover {
-      background: #1b61c1;
+      background-color: #91c3aa;
     }
-    .row { display: flex; gap: 10px; align-items: center; }
-    .row input { flex: 1; }
-    .flex-list, .media-list { margin-bottom: 20px; }
-    .section { margin-bottom: 24px; }
-    .toggle-tab {
-      display: inline-block;
-      padding: 6px 18px;
-      border-radius: 20px;
-      border: 1px solid #ccc;
-      margin: 0 6px;
-      background: #eee;
-      cursor: pointer;
-    }
-    .toggle-tab.active {
-      background: #2d89ef;
-      color: white;
+    .tabs button.active {
       font-weight: bold;
+      background-color: #ffee85;
+      color: #666666;
+    }
+    #details-container div, .media-link-container div {
+      margin-bottom: 12px;
     }
   </style>
 </head>
 <body>
-  <h2>➕ Add Version 10.2</h2>
+<div class="" id="tab-add" style="display:block;">
+<section>
+<h2>Add</h2>
+<input placeholder="Search, Scan, Upload to add existing..." type="search"/>
+<p><em>Item Not Found. Would you like to create a new item?</em></p>
+<button>Create New Item</button>
+<h3>Sharing</h3>
+<div id="visibility-toggle" style="opacity: 0.5; display: flex; gap: 10px; margin: 10px 0; border-radius: 8px; overflow: hidden;">
+<button id="btn-group" onclick="setVisibility('group')" style="flex: 1; padding: 10px; border: none; background-color: lightgray; color: black; cursor: not-allowed;">Group</button>
+<button id="btn-public" onclick="setVisibility('public')" style="flex: 1; padding: 10px; border: none; background-color: lightgray; color: black; cursor: not-allowed;">Public</button>
+</div>
+<h3>Location Source</h3><table style="width: 100%; border-collapse: collapse;"><tr><td style="width: 40px; border: 1px dashed gray; vertical-align: top; padding-top: 4px;"><input id="isLocationSource" type="checkbox"/></td><td style="border: 1px dashed gray;"><label for="isLocationSource">Mark as Location Source</label></td></tr></table><div style="display: flex; align-items: center; gap: 10px; margin-top: 10px; margin-bottom: 10px;"></div><div id="location-section"></div>
+<h3>Details</h3>
+<input onfocus="activateVisibility()" placeholder="Name" type="text"/>
+<div id="details-container">
+<input placeholder="Key" type="text"/>
+<textarea placeholder="Value"></textarea>
+</div>
+<button onclick="addDetail()">Add Detail</button>
+<h3>Media</h3>
+<div class="media-link-container" id="media-links">
+<input placeholder="Add link to image" type="url"/>
+</div>
+<button onclick="addMediaLink()">+</button><br/>
+<label for="upload-image">
+<button onclick="document.getElementById('upload-image').click(); return false;">Upload Images</button>
+</label>
+<input accept="image/*" id="upload-image" style="display:none" type="file"/>
+<label for="upload-pdf">
+<button onclick="document.getElementById('upload-pdf').click(); return false;">Upload Documents</button>
+</label>
+<input accept="application/pdf" id="upload-pdf" style="display:none" type="file"/>
+<div style="text-align: right;">
+<button id="btn-add" onclick="location.href='#home'" style="background-color: #ffee85; color: #666666; border: none; border-radius: 8px; padding: 8px 16px; font-size: 16px; cursor: pointer;">Add Thing</button>
+</div>
+</section>
+</div>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAatek1caogYhCY0rXj9YrGC32E0lRJtUs",
+  authDomain: "whereapp-ideasdesai.firebaseapp.com",
+  projectId: "whereapp-ideasdesai"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-  <div class="section">
-    <label for="thing-name">Thing Name</label>
-    <input id="thing-name" placeholder="e.g. Star Agro: Tomato" />
-  </div>
+let userId = null;
+auth.signInAnonymously().then(res => {
+  userId = res.user.uid;
+  if (typeof window.loadLocationPicker === 'function') {
+    window.loadLocationPicker("details-container", userId, db);
+  }
+});
 
-  <div class="section">
-    <label>Visibility</label>
-    <div class="row" id="visibility-tabs">
-      <div class="toggle-tab active" data-value="group">Group</div>
-      <div class="toggle-tab" data-value="public">Public</div>
-    </div>
-  </div>
 
-  <div class="section">
-    <label><input type="checkbox" id="isLocationSource" /> Mark this Thing as a Location Source</label>
-  </div>
-
-  <div id="location-section" class="section"></div>
-
-  <div class="section">
-    <label>Flexibutes</label>
-    <div id="flex-list" class="flex-list"></div>
-    <button type="button" onclick="addFlexField()">➕ Add Detail</button>
-  </div>
-
-  <div class="section">
-    <label>Media Links</label>
-    <div id="media-list" class="media-list"></div>
-    <button type="button" onclick="addMediaField()">➕ Add Media</button>
-  </div>
-
-  <button onclick="submitThing()">✅ Submit</button>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAatek1caogYhCY0rXj9YrGC32E0lRJtUs",
-      authDomain: "whereapp-ideasdesai.firebaseapp.com",
-      projectId: "whereapp-ideasdesai"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    let userId = null;
-    let visibility = "group";
-
-    auth.signInAnonymously().then(res => {
-      userId = res.user.uid;
-      if (typeof window.loadLocationPicker === 'function') {
-        window.loadLocationPicker("location-section", userId, db);
-      }
-    });
-
-    function addFlexField(key = '', value = '') {
-      const container = document.getElementById("flex-list");
-      const row = document.createElement("div");
-      row.className = "row";
-      row.innerHTML = `<input placeholder="Key" value="${key}"><input placeholder="Value" value="${value}">`;
-      container.appendChild(row);
+    // Load live location picker
+    if (typeof window.loadLocationPicker === 'function') {
+      window.loadLocationPicker("location-section", userId, db);
     }
-
-    function addMediaField(link = '') {
-      const container = document.getElementById("media-list");
-      const input = document.createElement("input");
-      input.placeholder = "Paste image/document URL...";
-      input.value = link;
-      container.appendChild(input);
-    }
-
-    document.getElementById("visibility-tabs").addEventListener("click", e => {
-      if (e.target.classList.contains("toggle-tab")) {
-        document.querySelectorAll(".toggle-tab").forEach(t => t.classList.remove("active"));
-        e.target.classList.add("active");
-        visibility = e.target.dataset.value;
-      }
-    });
-
-    function submitThing() {
-      const name = document.getElementById("thing-name").value.trim();
-      const isLocationSource = document.getElementById("isLocationSource").checked;
-      const location = window.getSelectedLocation ? window.getSelectedLocation() : null;
-
-      const details = {};
-      document.querySelectorAll("#flex-list .row").forEach(row => {
-        const inputs = row.querySelectorAll("input");
-        if (inputs[0].value && inputs[1].value) {
-          details[inputs[0].value.trim()] = inputs[1].value.trim();
-        }
-      });
-
-      const media = Array.from(document.querySelectorAll("#media-list input"))
-                        .map(i => i.value.trim()).filter(x => x);
-
-      const data = {
-        name,
-        userId,
-        visibility,
-        isLocationSource,
-        createdAt: new Date().toISOString(),
-        flexibutes: details,
-        media
-      };
-
-      if (location) {
-        data.lat = location.lat;
-        data.long = location.long;
-      }
-
-      db.collection("things").add(data).then(() => {
-        alert("✅ Thing added successfully!");
-        location.reload();
-      }).catch(err => {
-        console.error("Error saving thing:", err);
-        alert("❌ Failed to save. Check console.");
-      });
-    }
-
-    addFlexField();
-    addMediaField();
-  </script>
+    </script>
 </body>
 </html>
