@@ -1,1 +1,50 @@
+<!-- locationPicker.html (sample usage) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Location Picker Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="locationPicker.js"></script>
+  <style>
+    body { font-family: sans-serif; max-width: 480px; margin: auto; padding: 20px; }
+    .section { margin-bottom: 20px; }
+    label { display: block; margin-bottom: 5px; }
+    input, select, button { width: 100%; padding: 8px; margin: 6px 0; }
+  </style>
+</head>
+<body>
+  <h2>📍 Pick Location Module Demo</h2>
+  <div id="location-picker"></div>
+
+  <button onclick="testGetLocation()">Get Selected Location</button>
+  <pre id="result"></pre>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAatek1caogYhCY0rXj9YrGC32E0lRJtUs",
+      authDomain: "whereapp-ideasdesai.firebaseapp.com",
+      projectId: "whereapp-ideasdesai"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let userId = null;
+
+    auth.signInAnonymously().then(res => {
+      userId = res.user.uid;
+      loadLocationPicker("location-picker", userId, db);
+    });
+
+    function testGetLocation() {
+      const location = getSelectedLocation();
+      document.getElementById('result').innerText = JSON.stringify(location, null, 2);
+    }
+  </script>
+</body>
+</html>
 
