@@ -1,1 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The App – Micro App Runtime (Dynamic JSON)</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    button { padding: 10px 15px; margin: 10px 5px; font-size: 16px; }
+    .score { font-size: 18px; margin-top: 10px; }
+    .log { margin-top: 20px; font-family: monospace; }
+  </style>
+</head>
+<body>
+  <h1>The App – Micro App Runtime (Dynamic JSON)</h1>
 
+  <div id="buttons"></div>
+  <div class="score" id="score"></div>
+  <div class="log" id="log"></div>
+
+  <script>
+    let score = 0;
+    let currentLat = null;
+    let currentLong = null;
+
+    async function loadApps() {
+      const files = ["owl", "unicorn", "hello"];
+      const apps = await Promise.all(
+        files.map(async id => {
+          const res = await fetch(`apps/${id}.json`);
+          const app = await res.json();
+          return app;
+        })
+      );
+      renderButtons(apps);
+    }
+
+    function updateScoreDisplay() {
+      document.getElementById("score").innerText = `Score: ${score}`;
+    }
+
+    function logAction(action) {
+      const logDiv = document.getElementById("log");
+      const timestamp = new Date().toLocaleTimeString();
+      logDiv.innerHTML += `[${timestamp}] ${action}<br>`;
+    }
+
+    function getLocation(callback) {
+      if (!navigator.geolocation) {
+        alert("Geolocation not supported");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(pos => {
+        currentLat = pos.coords.latitude.toFixed(5);
+        currentLong = pos.coords.longitude.toFixed(5);
+        callback();
+      }, err => {
+        alert("Location access denied.");
+      });
+    }
+
+    function renderButtons(apps) {
+      const container = document.getElementById("buttons");
+      apps.forEach(app => {
+        const btn = document.createElement("button");
+        btn.textContent = app.label;
+        btn.onclick = () => {
+          const run = () => {
+            score += app.score;
+            updateScoreDisplay();
+
+            if (app.whatsappMessage) {
+              const message = app.whatsappMessage
+                .replace("{{score}}", score)
+                .replace("{{lat}}", currentLat)
+                .replace("{{long}}", currentLong);
+              const encoded = encodeURIComponent(message);
+              window.open(`https://wa.me/?text=${encoded}`);
+              logAction(`${app.label} shared on WhatsApp.`);
+            } else {
+              logAction(`${app.label} clicked. (+${app.score}) at ${currentLat}, ${currentLong}`);
+            }
+          };
+
+          if (app.useLocation) {
+            getLocation(run);
+          } else {
+            run();
+          }
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    loadApps();
+    updateScoreDisplay();
+  </script>
+</body>
+</html>
