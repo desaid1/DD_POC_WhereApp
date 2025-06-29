@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The App - POC Micro Apps</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    button { padding: 10px 15px; margin: 10px 5px; font-size: 16px; }
+    .score { font-size: 18px; margin-top: 10px; }
+    .log { margin-top: 20px; font-family: monospace; }
+  </style>
+</head>
+<body>
+  <h1>The App – POC Micro App Demo</h1>
+
+  <div>
+    <button onclick="clickOwl()">🦉 Owl</button>
+    <button onclick="clickUnicorn()">🦄 Unicorn</button>
+    <button onclick="sendHelloWorld()">👋 Hello World</button>
+  </div>
+
+  <div class="score" id="score"></div>
+  <div class="log" id="log"></div>
+
+  <script>
+    let score = 0;
+    let currentLat = null;
+    let currentLong = null;
+
+    function updateScoreDisplay() {
+      document.getElementById("score").innerText = `Score: ${score}`;
+    }
+
+    function logAction(action) {
+      const logDiv = document.getElementById("log");
+      const timestamp = new Date().toLocaleTimeString();
+      logDiv.innerHTML += `[${timestamp}] ${action}<br>`;
+    }
+
+    function getLocation(callback) {
+      if (!navigator.geolocation) {
+        alert("Geolocation not supported");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(pos => {
+        currentLat = pos.coords.latitude.toFixed(5);
+        currentLong = pos.coords.longitude.toFixed(5);
+        callback();
+      }, err => {
+        alert("Location access denied.");
+      });
+    }
+
+    function clickOwl() {
+      getLocation(() => {
+        score += 1;
+        updateScoreDisplay();
+        logAction(`🦉 Owl clicked. (+1) at ${currentLat}, ${currentLong}`);
+        // visibility can be toggled here
+      });
+    }
+
+    function clickUnicorn() {
+      getLocation(() => {
+        score += 3;
+        updateScoreDisplay();
+        logAction(`🦄 Unicorn clicked. (+3) at ${currentLat}, ${currentLong}`);
+        const msg = encodeURIComponent(`Latest Unicorn score: ${score}`);
+        window.open(`https://wa.me/?text=${msg}`);
+      });
+    }
+
+    function sendHelloWorld() {
+      getLocation(() => {
+        const message = encodeURIComponent(`Hello World!\nIt's indeed a beautiful day at ${currentLat}, ${currentLong}`);
+        window.open(`https://wa.me/?text=${message}`);
+        logAction(`📤 Sent Hello World via WhatsApp at ${currentLat}, ${currentLong}`);
+      });
+    }
+
+    updateScoreDisplay();
+  </script>
+</body>
+</html>
