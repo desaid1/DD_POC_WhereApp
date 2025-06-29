@@ -1,81 +1,73 @@
-<!-- add.html — v20250629195500 -->
+<!-- add.html — v20250629230000 -->
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
 <title>Add Thing</title>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script defer="" src="apps/locationPicker.js"></script>
+<script defer src="apps/locationPicker.js"></script>
 <style>
-    * { box-sizing: border-box; }
-    body { font-family: sans-serif; margin: 0; padding: 0; background-color: white; color: black; }
-    nav {
-      background: #007BFF;
-      padding: 10px;
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-    }
-    nav a {
-      color: white;
-      text-decoration: none;
-      margin: 5px 10px;
-      font-size: 14px;
-    }
-    section {
-      padding: 30px 20px;
-      max-width: 420px;
-      margin: auto;
-      border-bottom: 1px solid #ccc;
-    }
-    h2, h3 {
-      text-align: left;
-      font-size: 18px;
-    }
-    input, textarea, select {
-      background-color: white;
-      color: black;
-      border: 2px solid #A8D5BA;
-      border-radius: 8px;
-      padding: 8px 16px;
-      font-size: 16px;
-      margin-bottom: 12px;
-      width: 100%;
-    }
-    button {
-      background-color: #A8D5BA;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 8px 16px;
-      font-size: 16px;
-      transition: background-color 0.3s ease;
-      cursor: pointer;
-      margin-bottom: 12px;
-      white-space: nowrap;
-    }
-    button:hover {
-      background-color: #91c3aa;
-    }
-    .tabs button.active {
-      font-weight: bold;
-      background-color: #ffee85;
-      color: #666666;
-    }
-    #details-container div, .media-link-container div {
-      margin-bottom: 12px;
-    }
-  </style>
+  * { box-sizing: border-box; }
+  body { font-family: sans-serif; margin: 0; padding: 0; background-color: white; color: black; }
+  nav {
+    background: #007BFF;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+  nav a {
+    color: white;
+    text-decoration: none;
+    margin: 5px 10px;
+    font-size: 14px;
+  }
+  section {
+    padding: 30px 20px;
+    max-width: 420px;
+    margin: auto;
+    border-bottom: 1px solid #ccc;
+  }
+  h2, h3 { text-align: left; font-size: 18px; }
+  input, textarea, select {
+    background-color: white;
+    color: black;
+    border: 2px solid #A8D5BA;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 16px;
+    margin-bottom: 12px;
+    width: 100%;
+  }
+  button {
+    background-color: #A8D5BA;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    margin-bottom: 12px;
+    white-space: nowrap;
+  }
+  button:hover { background-color: #91c3aa; }
+  .tabs button.active {
+    font-weight: bold;
+    background-color: #ffee85;
+    color: #666666;
+  }
+  #details-container div, .media-link-container div { margin-bottom: 12px; }
+</style>
 </head>
 <body>
-<div class="" id="tab-add" style="display:block;">
+<div id="tab-add" style="display:block;">
 <section>
 <h2>Add</h2>
 <input placeholder="Search, Scan, Upload to add existing..." type="search"/>
@@ -83,32 +75,33 @@
 <button>Create New Item</button>
 <h3>Sharing</h3>
 <div id="visibility-toggle" style="opacity: 0.5; display: flex; gap: 10px; margin: 10px 0; border-radius: 8px; overflow: hidden;">
-<button id="btn-group" onclick="setVisibility('group')" style="flex: 1; padding: 10px; border: none; background-color: lightgray; color: black; cursor: not-allowed;">Group</button>
-<button id="btn-public" onclick="setVisibility('public')" style="flex: 1; padding: 10px; border: none; background-color: lightgray; color: black; cursor: not-allowed;">Public</button>
+  <button id="btn-group" onclick="setVisibility('group')" style="flex: 1; padding: 10px; border: none; background-color: lightgray; color: black; cursor: not-allowed;">Group</button>
+  <button id="btn-public" onclick="setVisibility('public')" style="flex: 1; padding: 10px; border: none; background-color: lightgray; color: black; cursor: not-allowed;">Public</button>
 </div>
-<h3>Location Source</h3><table style="width: 100%; border-collapse: collapse;"><tr><td style="width: 40px; border: 1px dashed gray; vertical-align: top; padding-top: 4px;"><input id="isLocationSource" type="checkbox"/></td><td style="border: 1px dashed gray;"><label for="isLocationSource">Mark as Location Source</label></td></tr></table><div style="display: flex; align-items: center; gap: 10px; margin-top: 10px; margin-bottom: 10px;"></div><div id="location-section"></div>
+<h3>Location Source</h3>
+<table style="width: 100%; border-collapse: collapse;"><tr><td style="width: 40px; border: 1px dashed gray; vertical-align: top; padding-top: 4px;"><input id="isLocationSource" type="checkbox"/></td><td style="border: 1px dashed gray;"><label for="isLocationSource">Mark as Location Source</label></td></tr></table>
+<div id="location-section" style="margin-top: 10px; margin-bottom: 10px;"></div>
 <h3>Details</h3>
-<input onfocus="activateVisibility()" placeholder="Name" type="text"/>
+<input placeholder="Name" type="text"/>
 <div id="details-container">
-<input placeholder="Key" type="text"/>
-<textarea placeholder="Value"></textarea>
+  <div><input placeholder="Key" type="text"/><textarea placeholder="Value"></textarea></div>
 </div>
 <button onclick="addDetail()">Add Detail</button>
 <h3>Media</h3>
 <div class="media-link-container" id="media-links">
-<input placeholder="Add link to image" type="url"/>
+  <input placeholder="Add link to image" type="url"/>
 </div>
 <button onclick="addMediaLink()">+</button><br/>
 <label for="upload-image">
-<button onclick="document.getElementById('upload-image').click(); return false;">Upload Images</button>
+  <button onclick="document.getElementById('upload-image').click(); return false;">Upload Images</button>
 </label>
 <input accept="image/*" id="upload-image" style="display:none" type="file"/>
 <label for="upload-pdf">
-<button onclick="document.getElementById('upload-pdf').click(); return false;">Upload Documents</button>
+  <button onclick="document.getElementById('upload-pdf').click(); return false;">Upload Documents</button>
 </label>
 <input accept="application/pdf" id="upload-pdf" style="display:none" type="file"/>
 <div style="text-align: right;">
-<button id="btn-add" onclick="location.href='#home'" style="background-color: #ffee85; color: #666666; border: none; border-radius: 8px; padding: 8px 16px; font-size: 16px; cursor: pointer;">Add Thing</button>
+  <button id="btn-add" style="background-color: #ffee85; color: #666666; border: none; border-radius: 8px; padding: 8px 16px; font-size: 16px; cursor: pointer;">Add Thing</button>
 </div>
 </section>
 </div>
@@ -126,15 +119,30 @@ let userId = null;
 auth.signInAnonymously().then(res => {
   userId = res.user.uid;
   if (typeof window.loadLocationPicker === 'function') {
-    window.loadLocationPicker("details-container", userId, db);
+    window.loadLocationPicker("location-section", userId, db);
   }
 });
 
+function setVisibility(mode) {
+  const groupBtn = document.getElementById("btn-group");
+  const publicBtn = document.getElementById("btn-public");
+  groupBtn.style.backgroundColor = mode === 'group' ? '#ffee85' : 'lightgray';
+  publicBtn.style.backgroundColor = mode === 'public' ? '#ffee85' : 'lightgray';
+}
 
-    // Load live location picker
-    if (typeof window.loadLocationPicker === 'function') {
-      window.loadLocationPicker("location-section", userId, db);
-    }
-    </script>
+function addDetail() {
+  const container = document.getElementById("details-container");
+  const div = document.createElement("div");
+  div.innerHTML = `<input placeholder="Key" type="text"/><textarea placeholder="Value"></textarea>`;
+  container.appendChild(div);
+}
+
+function addMediaLink() {
+  const container = document.getElementById("media-links");
+  const div = document.createElement("div");
+  div.innerHTML = `<input placeholder="Add link to image" type="url"/>`;
+  container.appendChild(div);
+}
+</script>
 </body>
 </html>
