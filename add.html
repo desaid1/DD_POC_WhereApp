@@ -1,4 +1,4 @@
-<!-- add.html (with integrated location picker) -->
+<!-- add.html (Rich UI with integrated location picker) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,18 +10,69 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script defer src="apps/locationPicker.js"></script>
   <style>
-    body { font-family: sans-serif; max-width: 500px; margin: auto; padding: 20px; }
-    input, select, button, textarea { width: 100%; margin: 10px 0; padding: 8px; box-sizing: border-box; }
-    .smart-bar { position: relative; }
-    .smart-bar input { padding-right: 40px; }
-    .smart-bar .qr-icon { position: absolute; right: 10px; top: 8px; font-size: 18px; cursor: pointer; }
-    .section { margin-bottom: 20px; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      max-width: 600px;
+      margin: 30px auto;
+      padding: 20px;
+      background: #fafafa;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+    }
+    label {
+      font-weight: bold;
+    }
+    input, select, button, textarea {
+      width: 100%;
+      margin-top: 6px;
+      margin-bottom: 18px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    button {
+      background: #2d89ef;
+      color: white;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #1b61c1;
+    }
+    .smart-bar {
+      position: relative;
+    }
+    .smart-bar input {
+      padding-right: 40px;
+    }
+    .smart-bar .qr-icon {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+      cursor: pointer;
+      color: #888;
+    }
+    .section {
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
-  <h2>Add New Thing</h2>
+  <h2>➕ Add New Thing</h2>
 
-  <input id="thing-name" placeholder="Enter Thing Name..." />
+  <div class="section">
+    <label for="thing-name">Thing Name</label>
+    <input id="thing-name" placeholder="e.g. Green Cabbage" />
+  </div>
 
   <div class="section">
     <label for="visibility">Sharing</label>
@@ -39,15 +90,15 @@
 
   <div class="section">
     <label for="details">Details (key-value)</label>
-    <textarea id="details" placeholder="eg. Hours: 9am - 9pm\nPhone: +91...\nInfo: Fresh produce daily"></textarea>
+    <textarea id="details" rows="4" placeholder="Hours: 9am - 9pm\nPhone: +91...\nInfo: Fresh produce daily"></textarea>
   </div>
 
   <div class="section">
     <label for="mediaLinks">Media (image/document links)</label>
-    <textarea id="mediaLinks" placeholder="Paste image/document URLs, one per line"></textarea>
+    <textarea id="mediaLinks" rows="3" placeholder="Paste image/document URLs, one per line"></textarea>
   </div>
 
-  <button onclick="submitThing()">Add Thing</button>
+  <button onclick="submitThing()">➕ Add Thing</button>
 
   <script>
     const firebaseConfig = {
@@ -99,11 +150,11 @@
       }
 
       db.collection("things").add(data).then(() => {
-        alert("Thing added successfully!");
+        alert("✅ Thing added successfully!");
         location.reload();
       }).catch(err => {
         console.error("Error saving thing:", err);
-        alert("Failed to save. Check console.");
+        alert("❌ Failed to save. Check console.");
       });
     }
   </script>
