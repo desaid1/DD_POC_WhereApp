@@ -1,0 +1,7 @@
+{
+  "id": "unicorn",
+  "label": "🦄 Unicorn",
+  "score": 3,
+  "useLocation": true,
+  "whatsappMessage": "Latest Unicorn score: {{score}}"
+}
