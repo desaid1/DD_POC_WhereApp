@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>WhereApp 2.0 – Simplifying Sustainability</title>
+  <title>WhereApp – Simplifying Sustainability</title>
   <link href="https://fonts.googleapis.com/css2?family=Product+Sans:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -60,7 +60,7 @@
     button:hover {
       background: #777b80;
     }
-    .results {
+    .results, .log {
       margin-top: 40px;
       max-width: 600px;
       width: 90%;
@@ -85,18 +85,27 @@
       border-radius: 4px;
       margin: 6px 4px 0 0;
     }
+    .score {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+    .log {
+      font-family: monospace;
+      color: #aaa;
+    }
+    .edit-btn {
+      margin-top: 10px;
+      background: #4285f4;
+    }
   </style>
 </head>
 <body>
   <h1>WhereApp</h1>
   <input type="text" id="searchInput" placeholder="Search or trigger..." oninput="renderThings()" />
-  <div class="apps">
-    <button onclick="location.href='apps/owl.json'">🦉 Owl</button>
-    <button onclick="location.href='apps/unicorn.json'">🦄 Unicorn</button>
-    <button onclick="location.href='apps/hello.json'">💬 Hello</button>
-    <button onclick="location.href='add.html'">➕ Add Thing</button>
-  </div>
+  <div class="apps" id="buttons"></div>
+  <div class="score" id="score"></div>
   <div class="results" id="thingsList"></div>
+  <div class="log" id="log"></div>
 
   <script>
     const firebaseConfig = {
@@ -110,17 +119,20 @@
 
     let userId = null;
     let allThings = [];
+    let score = 0;
+    let currentLat = null;
+    let currentLong = null;
 
     auth.signInAnonymously().then(res => {
       userId = res.user.uid;
       fetchThings();
+      loadApps();
     });
 
     async function fetchThings() {
       const snapshot = await db.collection("things")
         .where("visibility", "in", ["public", "group"])
         .get();
-
       allThings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       renderThings();
     }
@@ -162,11 +174,102 @@
           ${details}
           <p><strong>Location:</strong> ${thing.location?.source || 'Unknown'} (${thing.location?.lat}, ${thing.location?.long})</p>
           <p><strong>Visibility:</strong> ${thing.visibility || 'private'}</p>
+          <button class="edit-btn" onclick="location.href='edit.html?id=${thing.id}'">✏️ Edit</button>
         `;
 
         container.appendChild(div);
       });
     }
+
+    function getLocation(callback) {
+      if (!navigator.geolocation) {
+        alert("Geolocation not supported");
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(pos => {
+        currentLat = pos.coords.latitude.toFixed(5);
+        currentLong = pos.coords.longitude.toFixed(5);
+        callback();
+      }, err => {
+        alert("Location access denied.");
+      });
+    }
+
+    function logAction(action) {
+      const logDiv = document.getElementById("log");
+      const timestamp = new Date().toLocaleTimeString();
+      logDiv.innerHTML += `[${timestamp}] ${action}<br>`;
+    }
+
+    function logToFirestore(appId, scoreDelta) {
+      db.collection("interactions").add({
+        userId: userId,
+        appId: appId,
+        scoreAdded: scoreDelta,
+        lat: currentLat,
+        long: currentLong,
+        timestamp: new Date()
+      }).catch(console.error);
+    }
+
+    function updateScoreDisplay() {
+      document.getElementById("score").innerText = `Score: ${score}`;
+    }
+
+    async function loadApps() {
+      const files = ["owl", "unicorn", "hello"];
+      const apps = await Promise.all(
+        files.map(async id => {
+          const res = await fetch(`apps/${id}.json`);
+          const app = await res.json();
+          return app;
+        })
+      );
+      renderButtons(apps);
+    }
+
+    function renderButtons(apps) {
+      const container = document.getElementById("buttons");
+      container.innerHTML = "";
+      apps.forEach(app => {
+        const btn = document.createElement("button");
+        btn.textContent = app.label;
+        btn.onclick = () => {
+          const run = () => {
+            score += app.score;
+            updateScoreDisplay();
+            logToFirestore(app.id, app.score);
+
+            if (app.whatsappMessage) {
+              let message = app.whatsappMessage
+                .replace("{{score}}", score)
+                .replace("{{lat}}", currentLat)
+                .replace("{{long}}", currentLong);
+
+              if (message.includes("{{mapLink}}")) {
+                const mapUrl = `https://maps.google.com/?q=${currentLat},${currentLong}`;
+                message = message.replace("{{mapLink}}", mapUrl);
+              }
+
+              const encoded = encodeURIComponent(message);
+              window.open(`https://wa.me/?text=${encoded}`);
+              logAction(`${app.label} shared on WhatsApp.`);
+            } else {
+              logAction(`${app.label} clicked. (+${app.score}) at ${currentLat}, ${currentLong}`);
+            }
+          };
+
+          if (app.useLocation) {
+            getLocation(run);
+          } else {
+            run();
+          }
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    updateScoreDisplay();
   </script>
 </body>
 </html>
