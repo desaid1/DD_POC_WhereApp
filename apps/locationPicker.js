@@ -1,10 +1,10 @@
-// locationPicker.js :: v20250629235000 with debug logging
+// locationPicker.js :: v20250629235500 with location guard for submission
 let selectedLocation = null;
 
 function loadLocationPicker(containerId, userId, db) {
   const container = document.getElementById(containerId);
   container.innerHTML = `
-    <label for="locationSourceSelect">📍 Choose Location Source v20250629235000:</label>
+    <label for="locationSourceSelect">📍 Choose Location Source v20250629235500:</label>
     <select id="locationSourceSelect" style="margin-bottom: 10px;">
       <option value="">Select from saved location sources...</option>
     </select>
@@ -56,3 +56,13 @@ function loadLocationPicker(containerId, userId, db) {
 function getSelectedLocation() {
   return selectedLocation;
 }
+
+// Patch to guard submission for missing location
+window.ensureLocationSourceIsValid = function (isLocationSource) {
+  const location = getSelectedLocation();
+  if (isLocationSource && !location) {
+    alert("❌ Please select a Location Source from the dropdown.");
+    return false;
+  }
+  return true;
+};
