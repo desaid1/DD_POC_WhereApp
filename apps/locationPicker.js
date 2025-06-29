@@ -8,22 +8,13 @@ function loadLocationPicker(containerId, userId, db) {
   // Create the smart bar
   const smartBar = document.createElement("div");
   smartBar.className = "smart-bar";
+  smartBar.style.position = "relative";
 
   const input = document.createElement("input");
   input.type = "text";
-  input.placeholder = "Paste Google Maps link or pick source...";
-
-  const qrIcon = document.createElement("span");
-  qrIcon.className = "qr-icon";
-  qrIcon.innerHTML = "📷";
-  qrIcon.title = "QR Scan (coming soon)";
-
-  qrIcon.onclick = () => {
-    alert("QR Scan feature coming soon!");
-  };
+  input.placeholder = "Select location source...";
 
   smartBar.appendChild(input);
-  smartBar.appendChild(qrIcon);
   container.appendChild(smartBar);
 
   // Load location sources from user's data
@@ -57,23 +48,12 @@ function loadLocationPicker(containerId, userId, db) {
         container.insertBefore(dropdown, smartBar);
       }
     });
-
-  input.addEventListener("input", () => {
-    const url = input.value.trim();
-    const match = url.match(/maps\.google\.com\/\?q=([-+\d\.]+),([-+\d\.]+)/);
-    if (match) {
-      selectedLocation = {
-        lat: parseFloat(match[1]),
-        long: parseFloat(match[2]),
-        source: "manual"
-      };
-    }
-  });
 }
 
 function getSelectedLocation() {
   return selectedLocation;
 }
-// Expose functions to window for use in HTML
+
+// ✅ Export to window scope so HTML pages can access it
 window.loadLocationPicker = loadLocationPicker;
 window.getSelectedLocation = getSelectedLocation;
