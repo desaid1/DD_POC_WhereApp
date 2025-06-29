@@ -1,4 +1,4 @@
-<!-- add.html — v20250629230000 -->
+<!-- add.html — v20250629231500 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -74,9 +74,9 @@
 <p><em>Item Not Found. Would you like to create a new item?</em></p>
 <button>Create New Item</button>
 <h3>Sharing</h3>
-<div id="visibility-toggle" style="opacity: 0.5; display: flex; gap: 10px; margin: 10px 0; border-radius: 8px; overflow: hidden;">
-  <button id="btn-group" onclick="setVisibility('group')" style="flex: 1; padding: 10px; border: none; background-color: lightgray; color: black; cursor: not-allowed;">Group</button>
-  <button id="btn-public" onclick="setVisibility('public')" style="flex: 1; padding: 10px; border: none; background-color: lightgray; color: black; cursor: not-allowed;">Public</button>
+<div id="visibility-toggle" style="display: flex; gap: 10px; margin: 10px 0; border-radius: 8px; overflow: hidden;">
+  <button id="btn-group" onclick="setVisibility('group')" style="flex: 1; padding: 10px; border: none; background-color: lightgray; color: black;">Group</button>
+  <button id="btn-public" onclick="setVisibility('public')" style="flex: 1; padding: 10px; border: none; background-color: lightgray; color: black;">Public</button>
 </div>
 <h3>Location Source</h3>
 <table style="width: 100%; border-collapse: collapse;"><tr><td style="width: 40px; border: 1px dashed gray; vertical-align: top; padding-top: 4px;"><input id="isLocationSource" type="checkbox"/></td><td style="border: 1px dashed gray;"><label for="isLocationSource">Mark as Location Source</label></td></tr></table>
@@ -116,6 +116,8 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 let userId = null;
+let visibility = "private";
+
 auth.signInAnonymously().then(res => {
   userId = res.user.uid;
   if (typeof window.loadLocationPicker === 'function') {
@@ -124,10 +126,11 @@ auth.signInAnonymously().then(res => {
 });
 
 function setVisibility(mode) {
+  visibility = mode;
   const groupBtn = document.getElementById("btn-group");
   const publicBtn = document.getElementById("btn-public");
-  groupBtn.style.backgroundColor = mode === 'group' ? '#ffee85' : 'lightgray';
-  publicBtn.style.backgroundColor = mode === 'public' ? '#ffee85' : 'lightgray';
+  groupBtn.style.backgroundColor = (mode === 'group') ? '#ffee85' : 'lightgray';
+  publicBtn.style.backgroundColor = (mode === 'public') ? '#ffee85' : 'lightgray';
 }
 
 function addDetail() {
