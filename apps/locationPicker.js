@@ -74,3 +74,6 @@ function loadLocationPicker(containerId, userId, db) {
 function getSelectedLocation() {
   return selectedLocation;
 }
+// Expose to global scope
+window.loadLocationPicker = loadLocationPicker;
+window.getSelectedLocation = getSelectedLocation;
