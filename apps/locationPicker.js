@@ -5,6 +5,8 @@ function loadLocationPicker(containerId, userId, db) {
   const container = document.getElementById(containerId);
   if (!container) return;
 
+  console.log("📌 Location Picker: Initializing with userId:", userId);
+
   // Create the smart bar
   const smartBar = document.createElement("div");
   smartBar.className = "smart-bar";
@@ -23,6 +25,7 @@ function loadLocationPicker(containerId, userId, db) {
     .where("isLocationSource", "==", true)
     .get()
     .then(snapshot => {
+      console.log("📌 Location Picker: Query completed. Docs found:", snapshot.size);
       if (!snapshot.empty) {
         const dropdown = document.createElement("select");
         const defaultOpt = document.createElement("option");
@@ -31,6 +34,7 @@ function loadLocationPicker(containerId, userId, db) {
 
         snapshot.forEach(doc => {
           const data = doc.data();
+          console.log("📌 Found location source:", data.name);
           const opt = document.createElement("option");
           opt.value = JSON.stringify({ lat: data.lat, long: data.long });
           opt.text = data.name + ` (${data.locationSource || 'GPS'})`;
@@ -43,13 +47,13 @@ function loadLocationPicker(containerId, userId, db) {
             selectedLocation = value;
             input.value = `https://maps.google.com/?q=${value.lat},${value.long}`;
           } catch (e) {
-            console.error("Failed to parse location source:", e);
+            console.error("❌ Failed to parse location source:", e);
           }
         };
 
         container.insertBefore(dropdown, smartBar);
       } else {
-        console.warn("No location sources found for user:", userId);
+        console.warn("⚠️ No location sources found for user:", userId);
         const message = document.createElement("div");
         message.style.color = "#b00";
         message.style.marginTop = "10px";
@@ -58,7 +62,7 @@ function loadLocationPicker(containerId, userId, db) {
       }
     })
     .catch(error => {
-      console.error("Error loading location sources:", error);
+      console.error("❌ Error loading location sources:", error);
       const errorMsg = document.createElement("div");
       errorMsg.style.color = "#b00";
       errorMsg.style.marginTop = "10px";
