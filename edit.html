@@ -62,7 +62,7 @@
     }
     td {
       padding: 4px;
-      vertical-align: top;
+      vertical-align: middle;
       border: 1px dashed gray;
     }
   </style>
@@ -85,7 +85,7 @@
 <button onclick="addMediaLink()">Add Media Link</button>
 <label>Mark as Location Source</label>
 <table><tr style="vertical-align: middle;">
-  <td style="width: 40px; vertical-align: middle;"><input type="checkbox" id="isLocationSource" style="vertical-align: middle;"></td>
+  <td style="width: 40px; vertical-align: middle;"><input type="checkbox" id="isLocationSource" style="vertical-align: middle;" onchange="toggleLocationPicker()"></td>
   <td style="vertical-align: middle;"><label for="isLocationSource" style="vertical-align: middle;">Mark as Location Source</label></td>
 </tr></table>
 <div id="location-section" style="margin-bottom: 10px;"></div>
@@ -116,6 +116,24 @@ function addMediaLink(url = '') {
   document.getElementById('media-container').appendChild(div);
 }
 
+function toggleLocationPicker() {
+  if (typeof window.loadLocationPicker === 'function') {
+    window.loadLocationPicker("location-section", userId, db);
+  }
+  const isSource = document.getElementById('isLocationSource').checked;
+  if (isSource) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      selectedLocation = {
+        lat: pos.coords.latitude.toFixed(5),
+        long: pos.coords.longitude.toFixed(5),
+        source: 'device'
+      };
+    }, err => {
+      alert("Location access denied. Please allow access.");
+    });
+  }
+}
+
 function updateThing() {
   const name = document.getElementById('thing-name').value.trim();
   const visibility = document.getElementById('thing-visibility').value;
@@ -125,7 +143,7 @@ function updateThing() {
     return { key: k.value.trim(), val: v.value.trim() };
   }).filter(kv => kv.key && kv.val);
   const media = [...document.querySelectorAll('#media-container input')].map(input => input.value.trim()).filter(Boolean);
-  const location = isLocationSource ? selectedLocation : null;
+  const location = isLocationSource ? selectedLocation : getSelectedLocation();
 
   db.collection("things").doc(thingId).update({
     name, visibility, flexibutes, media, isLocationSource, location
@@ -138,6 +156,10 @@ function updateThing() {
   });
 }
 
+function getSelectedLocation() {
+  return (typeof window.getSelectedLocation === 'function') ? window.getSelectedLocation() : null;
+}
+
 auth.signInAnonymously().then(res => {
   userId = res.user.uid;
   db.collection("things").doc(thingId).get().then(doc => {
@@ -148,9 +170,7 @@ auth.signInAnonymously().then(res => {
     document.getElementById('isLocationSource').checked = !!data.isLocationSource;
     (data.flexibutes || []).forEach(({key, val}) => addFlexibute(key, val));
     (data.media || []).forEach(m => addMediaLink(m));
-    if (typeof window.loadLocationPicker === 'function') {
-      window.loadLocationPicker("location-section", userId, db);
-    }
+    toggleLocationPicker();
     selectedLocation = data.location || null;
   });
 });
