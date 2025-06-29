@@ -1,9 +1,9 @@
-<!-- add.html (Rich UI with advanced flexibutes, media, and location picker) -->
+<!-- add.html (Version 10.1 - Final UI with Smart Location Picker) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Add Version 10.0</title>
+  <title>Add Version 10.1</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -50,20 +50,10 @@
     .row input { flex: 1; }
     .flex-list, .media-list { margin-bottom: 20px; }
     .section { margin-bottom: 24px; }
-    .smart-bar input { padding-right: 40px; }
-    .smart-bar .qr-icon {
-      position: absolute;
-      right: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 18px;
-      cursor: pointer;
-      color: #888;
-    }
   </style>
 </head>
 <body>
-  <h2>➕ Add Version 10.0</h2>
+  <h2>➕ Add Version 10.1</h2>
 
   <div class="section">
     <label for="thing-name">Thing Name</label>
@@ -96,7 +86,7 @@
     <button type="button" onclick="addMediaField()">➕ Add Media</button>
   </div>
 
-  <button onclick="submitThing()">➕ Add Version 10.0</button>
+  <button onclick="submitThing()">✅ Submit</button>
 
   <script>
     const firebaseConfig = {
