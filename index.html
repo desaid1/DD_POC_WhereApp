@@ -10,6 +10,10 @@
     .score { font-size: 18px; margin-top: 10px; }
     .log { margin-top: 20px; font-family: monospace; }
   </style>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
   <h1> Micro App Runtime (Dynamic JSON)</h1>
@@ -19,9 +23,33 @@
   <div class="log" id="log"></div>
 
   <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAatek1caogYhCY0rXj9YrGC32E0lRJtUs",
+      authDomain: "whereapp-ideasdesai.firebaseapp.com",
+      projectId: "whereapp-ideasdesai",
+      storageBucket: "whereapp-ideasdesai.firebasestorage.app",
+      messagingSenderId: "134818032534",
+      appId: "1:134818032534:web:29c5935040df342ad00bb7",
+      measurementId: "G-5HCDHXN1RQ"
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
     let score = 0;
     let currentLat = null;
     let currentLong = null;
+    let userId = null;
+
+    auth.signInAnonymously().then(result => {
+      userId = result.user.uid;
+      loadApps();
+    }).catch(error => {
+      console.error("Auth error:", error);
+    });
 
     async function loadApps() {
       const files = ["owl", "unicorn", "hello"];
@@ -59,6 +87,17 @@
       });
     }
 
+    function logToFirestore(appId, scoreDelta) {
+      db.collection("interactions").add({
+        userId: userId,
+        appId: appId,
+        scoreAdded: scoreDelta,
+        lat: currentLat,
+        long: currentLong,
+        timestamp: new Date()
+      }).catch(console.error);
+    }
+
     function renderButtons(apps) {
       const container = document.getElementById("buttons");
       apps.forEach(app => {
@@ -68,6 +107,7 @@
           const run = () => {
             score += app.score;
             updateScoreDisplay();
+            logToFirestore(app.id, app.score);
 
             if (app.whatsappMessage) {
               let message = app.whatsappMessage
@@ -75,7 +115,6 @@
                 .replace("{{lat}}", currentLat)
                 .replace("{{long}}", currentLong);
 
-              // Replace with Google Maps short link if specified in message
               if (message.includes("{{mapLink}}")) {
                 const mapUrl = `https://maps.google.com/?q=${currentLat},${currentLong}`;
                 message = message.replace("{{mapLink}}", mapUrl);
@@ -99,7 +138,6 @@
       });
     }
 
-    loadApps();
     updateScoreDisplay();
   </script>
 </body>
