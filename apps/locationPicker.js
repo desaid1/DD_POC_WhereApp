@@ -4,7 +4,7 @@ let selectedLocation = null;
 function loadLocationPicker(containerId, userId, db) {
   const container = document.getElementById(containerId);
   container.innerHTML = `
-    <label for="locationSourceSelect">📍 Choose Location Source:</label>
+    <label for="locationSourceSelect">📍 Choose Location Source v20250629194700:</label>
     <select id="locationSourceSelect" style="margin-bottom: 10px;">
       <option value="">Select from saved location sources...</option>
     </select>
