@@ -4,141 +4,169 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WhereApp – Simplifying Sustainability</title>
-  <style>
-    body { font-family: sans-serif; padding: 20px; }
-    button { padding: 10px 15px; margin: 10px 5px; font-size: 16px; }
-    .score { font-size: 18px; margin-top: 10px; }
-    .log { margin-top: 20px; font-family: monospace; }
-  </style>
-  <!-- Firebase SDK -->
+  <link href="https://fonts.googleapis.com/css2?family=Product+Sans:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Product Sans', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      background: #202124;
+      color: white;
+      padding-top: 15vh;
+    }
+    h1 {
+      font-size: 92px;
+      margin: 0;
+      letter-spacing: -2px;
+    }
+    input[type="text"] {
+      width: 90%;
+      max-width: 560px;
+      padding: 14px 20px;
+      font-size: 18px;
+      border-radius: 30px;
+      border: none;
+      outline: none;
+      box-shadow: 0 1px 6px rgba(32,33,36,.28);
+      margin-top: 30px;
+      background: white;
+      color: black;
+    }
+    .apps {
+      display: flex;
+      gap: 12px;
+      margin-top: 30px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      background: #5f6368;
+      color: white;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #777b80;
+    }
+    .results {
+      margin-top: 40px;
+      max-width: 600px;
+      width: 90%;
+    }
+    .thing {
+      background: #303134;
+      padding: 14px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    }
+    .thing h3 {
+      margin: 0 0 5px;
+      color: #fff;
+    }
+    .thing p {
+      margin: 2px 0;
+      color: #ccc;
+    }
+    .media-img {
+      max-width: 100px;
+      border-radius: 4px;
+      margin: 6px 4px 0 0;
+    }
+  </style>
 </head>
 <body>
-  <h1> Micro App Runtime (Dynamic JSON)</h1>
-
-  <div id="buttons"></div>
-  <div class="score" id="score"></div>
-  <div class="log" id="log"></div>
+  <h1>WhereApp</h1>
+  <input type="text" id="searchInput" placeholder="Search or trigger..." oninput="renderThings()" />
+  <div class="apps">
+    <button onclick="location.href='apps/owl.json'">🦉 Owl</button>
+    <button onclick="location.href='apps/unicorn.json'">🦄 Unicorn</button>
+    <button onclick="location.href='apps/hello.json'">💬 Hello</button>
+    <button onclick="location.href='add.html'">➕ Add Thing</button>
+  </div>
+  <div class="results" id="thingsList"></div>
 
   <script>
-    // Firebase configuration
     const firebaseConfig = {
       apiKey: "AIzaSyAatek1caogYhCY0rXj9YrGC32E0lRJtUs",
       authDomain: "whereapp-ideasdesai.firebaseapp.com",
-      projectId: "whereapp-ideasdesai",
-      storageBucket: "whereapp-ideasdesai.firebasestorage.app",
-      messagingSenderId: "134818032534",
-      appId: "1:134818032534:web:29c5935040df342ad00bb7",
-      measurementId: "G-5HCDHXN1RQ"
+      projectId: "whereapp-ideasdesai"
     };
-
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
     const db = firebase.firestore();
 
-    let score = 0;
-    let currentLat = null;
-    let currentLong = null;
     let userId = null;
+    let allThings = [];
 
-    auth.signInAnonymously().then(result => {
-      userId = result.user.uid;
-      loadApps();
-    }).catch(error => {
-      console.error("Auth error:", error);
+    auth.signInAnonymously().then(res => {
+      userId = res.user.uid;
+      fetchThings();
     });
 
-    async function loadApps() {
-      const files = ["owl", "unicorn", "hello"];
-      const apps = await Promise.all(
-        files.map(async id => {
-          const res = await fetch(`apps/${id}.json`);
-          const app = await res.json();
-          return app;
-        })
-      );
-      renderButtons(apps);
+    async function fetchThings() {
+      const snapshot = await db.collection("things")
+        .where("visibility", "in", ["public", "group"])
+        .get();
+
+      allThings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      renderThings();
     }
 
-    function updateScoreDisplay() {
-      document.getElementById("score").innerText = `Score: ${score}`;
-    }
+    function renderThings() {
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const container = document.getElementById('thingsList');
+      container.innerHTML = '';
 
-    function logAction(action) {
-      const logDiv = document.getElementById("log");
-      const timestamp = new Date().toLocaleTimeString();
-      logDiv.innerHTML += `[${timestamp}] ${action}<br>`;
-    }
+      const filtered = allThings.filter(t => {
+        const nameMatch = t.name?.toLowerCase().includes(query);
+        const flexMatch = (t.flexibutes || []).some(({ key, val }) =>
+          key?.toLowerCase().includes(query) || val?.toLowerCase().includes(query)
+        );
+        return nameMatch || flexMatch;
+      });
 
-    function getLocation(callback) {
-      if (!navigator.geolocation) {
-        alert("Geolocation not supported");
+      if (filtered.length === 0) {
+        container.innerHTML = '<p style="color:#aaa">No matching things found.</p>';
         return;
       }
-      navigator.geolocation.getCurrentPosition(pos => {
-        currentLat = pos.coords.latitude.toFixed(5);
-        currentLong = pos.coords.longitude.toFixed(5);
-        callback();
-      }, err => {
-        alert("Location access denied.");
+
+      filtered.forEach(thing => {
+        const div = document.createElement('div');
+        div.className = 'thing';
+
+        const mediaImages = (thing.media || [])
+          .filter(m => m.includes("http"))
+          .map(m => `<img src="${m}" class="media-img">`)
+          .join('');
+
+        const details = (thing.flexibutes || [])
+          .map(({ key, val }) => `<p><strong>${key}:</strong> ${val}</p>`)
+          .join('');
+
+        div.innerHTML = `
+          <h3>${thing.name || 'Untitled Thing'}</h3>
+          ${mediaImages}<br>
+          ${details}
+          <p><strong>Location:</strong> ${thing.location?.source || 'Unknown'} (${thing.location?.lat}, ${thing.location?.long})</p>
+          <p><strong>Visibility:</strong> ${thing.visibility || 'private'}</p>
+        `;
+
+        container.appendChild(div);
       });
     }
-
-    function logToFirestore(appId, scoreDelta) {
-      db.collection("interactions").add({
-        userId: userId,
-        appId: appId,
-        scoreAdded: scoreDelta,
-        lat: currentLat,
-        long: currentLong,
-        timestamp: new Date()
-      }).catch(console.error);
-    }
-
-    function renderButtons(apps) {
-      const container = document.getElementById("buttons");
-      apps.forEach(app => {
-        const btn = document.createElement("button");
-        btn.textContent = app.label;
-        btn.onclick = () => {
-          const run = () => {
-            score += app.score;
-            updateScoreDisplay();
-            logToFirestore(app.id, app.score);
-
-            if (app.whatsappMessage) {
-              let message = app.whatsappMessage
-                .replace("{{score}}", score)
-                .replace("{{lat}}", currentLat)
-                .replace("{{long}}", currentLong);
-
-              if (message.includes("{{mapLink}}")) {
-                const mapUrl = `https://maps.google.com/?q=${currentLat},${currentLong}`;
-                message = message.replace("{{mapLink}}", mapUrl);
-              }
-
-              const encoded = encodeURIComponent(message);
-              window.open(`https://wa.me/?text=${encoded}`);
-              logAction(`${app.label} shared on WhatsApp.`);
-            } else {
-              logAction(`${app.label} clicked. (+${app.score}) at ${currentLat}, ${currentLong}`);
-            }
-          };
-
-          if (app.useLocation) {
-            getLocation(run);
-          } else {
-            run();
-          }
-        };
-        container.appendChild(btn);
-      });
-    }
-
-    updateScoreDisplay();
   </script>
 </body>
 </html>
