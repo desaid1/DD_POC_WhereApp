@@ -3,5 +3,5 @@
   "label": "👋 Hello World",
   "score": 0,
   "useLocation": true,
-  "whatsappMessage": "Hello World!\\nIt's indeed a beautiful day at {{lat}}, {{long}}"
+  "whatsappMessage": "Hello World! It’s indeed a beautiful day here: {{mapLink}}"
 }
