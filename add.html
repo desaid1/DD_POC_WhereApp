@@ -1,4 +1,4 @@
-<!-- add.html — v20250629233500 -->
+<!-- add.html — v20250629234000 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -120,7 +120,8 @@ let visibility = "private";
 
 auth.signInAnonymously().then(res => {
   userId = res.user.uid;
-  if (typeof window.loadLocationPicker === 'function') {
+  console.log("👤 Authenticated as:", userId);
+  if (userId && typeof window.loadLocationPicker === 'function') {
     window.loadLocationPicker("location-section", userId, db);
   }
 });
@@ -174,6 +175,8 @@ function submitThing() {
 
   const isLocationSource = document.getElementById("isLocationSource").checked;
   const location = getSelectedLocation();
+
+  console.log("👤 Submitting with userId:", userId);
 
   const thing = {
     name,
