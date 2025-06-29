@@ -66,3 +66,13 @@ window.ensureLocationSourceIsValid = function (isLocationSource) {
   }
   return true;
 };
+
+// Inject call into submitThing()
+if (typeof window.submitThing === "function") {
+  const originalSubmit = window.submitThing;
+  window.submitThing = function () {
+    const isLocationSource = document.getElementById("isLocationSource").checked;
+    if (!ensureLocationSourceIsValid(isLocationSource)) return;
+    originalSubmit();
+  };
+}
