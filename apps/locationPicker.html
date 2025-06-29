@@ -1,4 +1,4 @@
-<!-- locationPicker.html (sample usage) -->
+<!-- locationPicker.html (smart bar version) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,12 +8,28 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-  <script src="locationPicker.js"></script>
+  <script src="apps/locationPicker.js"></script>
   <style>
     body { font-family: sans-serif; max-width: 480px; margin: auto; padding: 20px; }
     .section { margin-bottom: 20px; }
     label { display: block; margin-bottom: 5px; }
     input, select, button { width: 100%; padding: 8px; margin: 6px 0; }
+    .smart-bar {
+      position: relative;
+    }
+    .smart-bar input {
+      width: 100%;
+      padding-right: 40px;
+      box-sizing: border-box;
+    }
+    .smart-bar .qr-icon {
+      position: absolute;
+      right: 10px;
+      top: 8px;
+      font-size: 18px;
+      color: #888;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -47,4 +63,3 @@
   </script>
 </body>
 </html>
-
