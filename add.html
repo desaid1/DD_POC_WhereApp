@@ -1,1 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Thing – Static Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 420px; margin: auto; background: white; color: black; }
+    input, textarea, select, button {
+      width: 100%; margin: 10px 0; padding: 10px;
+      font-size: 16px; border-radius: 8px; border: 2px solid #A8D5BA;
+    }
+    button {
+      background-color: #A8D5BA; color: white; border: none; cursor: pointer;
+    }
+    button:hover { background-color: #91c3aa; }
+    .section { margin-bottom: 30px; }
+  </style>
+</head>
+<body>
+  <h2>Add New Thing</h2>
+
+  <div class="section">
+    <input type="search" placeholder="Search, Scan, Upload to add existing...">
+    <p><em>Item Not Found. Would you like to create a new item?</em></p>
+    <button>Create New Item</button>
+  </div>
+
+  <div class="section">
+    <h3>Sharing</h3>
+    <div id="visibility-toggle" style="display: flex; gap: 10px;">
+      <button id="btn-group" onclick="setVisibility('group')">Group</button>
+      <button id="btn-public" onclick="setVisibility('public')">Public</button>
+    </div>
+  </div>
+
+  <div class="section">
+    <h3>Location Source</h3>
+    <select>
+      <option value="mobile">Mobile</option>
+      <option value="gps">GPS</option>
+      <option value="qr">QR Code</option>
+      <option value="rfid">RFID</option>
+    </select>
+  </div>
+
+  <div class="section">
+    <h3>Details</h3>
+    <input type="text" placeholder="Name" onfocus="activateVisibility()">
+    <div id="details-container">
+      <input type="text" placeholder="Key">
+      <textarea placeholder="Value"></textarea>
+    </div>
+    <button onclick="addDetail()">Add Detail</button>
+  </div>
+
+  <div class="section">
+    <h3>Media</h3>
+    <div id="media-links">
+      <input type="url" placeholder="Add link to image">
+    </div>
+    <button onclick="addMediaLink()">+</button><br>
+    <label>
+      <button onclick="document.getElementById('upload-image').click(); return false;">Upload Images</button>
+    </label>
+    <input type="file" id="upload-image" accept="image/*" style="display:none">
+    <label>
+      <button onclick="document.getElementById('upload-pdf').click(); return false;">Upload Documents</button>
+    </label>
+    <input type="file" id="upload-pdf" accept="application/pdf" style="display:none">
+  </div>
+
+  <div style="text-align: right;">
+    <button style="background-color: #ffee85; color: #666666;" onclick="alert('Pretend this added a thing')">Add Thing</button>
+  </div>
+
+  <script>
+    function setVisibility(mode) {
+      const groupBtn = document.getElementById('btn-group');
+      const publicBtn = document.getElementById('btn-public');
+      if (mode === 'group') {
+        groupBtn.style.backgroundColor = '#ffee85';
+        publicBtn.style.backgroundColor = 'lightgray';
+      } else {
+        publicBtn.style.backgroundColor = '#ffee85';
+        groupBtn.style.backgroundColor = 'lightgray';
+      }
+    }
+    function addDetail() {
+      const container = document.getElementById('details-container');
+      const keyInput = document.createElement('input');
+      keyInput.type = 'text';
+      keyInput.placeholder = 'Key';
+      const valueTextarea = document.createElement('textarea');
+      valueTextarea.placeholder = 'Value';
+      container.appendChild(keyInput);
+      container.appendChild(valueTextarea);
+    }
+    function addMediaLink() {
+      const container = document.getElementById('media-links');
+      const input = document.createElement('input');
+      input.type = 'url';
+      input.placeholder = 'Add link to image';
+      container.appendChild(input);
+    }
+    function activateVisibility() {
+      document.getElementById('visibility-toggle').style.opacity = 1;
+    }
+  </script>
+</body>
+</html>
 
