@@ -1,4 +1,4 @@
-<!-- add.html — v20250629232500 -->
+<!-- add.html — v20250629233500 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -157,6 +157,7 @@ function getSelectedLocation() {
 function submitThing() {
   const name = document.querySelector("input[placeholder='Name']").value.trim();
   if (!name) return alert("Please enter a name.");
+  if (!userId) return alert("User not signed in yet. Please wait.");
 
   const details = [];
   document.querySelectorAll("#details-container > div").forEach(div => {
@@ -176,7 +177,7 @@ function submitThing() {
 
   const thing = {
     name,
-    details,
+    flexibutes: details,
     media,
     isLocationSource,
     location,
@@ -184,6 +185,8 @@ function submitThing() {
     userId,
     createdAt: new Date().toISOString()
   };
+
+  console.log("📦 Submitting thing:", thing);
 
   db.collection("things").add(thing)
     .then(() => alert("✅ Thing added successfully!"))
