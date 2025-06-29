@@ -1,9 +1,9 @@
-<!-- add.html (Rich UI with integrated location picker) -->
+<!-- add.html (Rich UI with advanced flexibutes, media, and location picker) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Add V8</title>
+  <title>Add Version 9.0</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -12,12 +12,12 @@
   <style>
     body {
       font-family: 'Segoe UI', sans-serif;
-      max-width: 600px;
+      max-width: 700px;
       margin: 30px auto;
       padding: 20px;
-      background: #fafafa;
+      background: #f5f5f5;
       border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
     }
     h2 {
       text-align: center;
@@ -29,7 +29,7 @@
     input, select, button, textarea {
       width: 100%;
       margin-top: 6px;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
       padding: 10px;
       border: 1px solid #ccc;
       border-radius: 6px;
@@ -46,12 +46,11 @@
     button:hover {
       background: #1b61c1;
     }
-    .smart-bar {
-      position: relative;
-    }
-    .smart-bar input {
-      padding-right: 40px;
-    }
+    .row { display: flex; gap: 10px; align-items: center; }
+    .row input { flex: 1; }
+    .flex-list, .media-list { margin-bottom: 20px; }
+    .section { margin-bottom: 24px; }
+    .smart-bar input { padding-right: 40px; }
     .smart-bar .qr-icon {
       position: absolute;
       right: 10px;
@@ -61,25 +60,22 @@
       cursor: pointer;
       color: #888;
     }
-    .section {
-      margin-bottom: 20px;
-    }
   </style>
 </head>
 <body>
-  <h2>➕ Add V8</h2>
+  <h2>➕ Add Version 9.0</h2>
 
   <div class="section">
     <label for="thing-name">Thing Name</label>
-    <input id="thing-name" placeholder="e.g. Green Cabbage" />
+    <input id="thing-name" placeholder="e.g. Star Agro: Tomato" />
   </div>
 
   <div class="section">
-    <label for="visibility">Sharing</label>
-    <select id="visibility">
-      <option value="group">Group</option>
-      <option value="public">Public</option>
-    </select>
+    <label>Visibility</label>
+    <div class="row">
+      <label><input type="radio" name="visibility" value="group" checked> Group</label>
+      <label><input type="radio" name="visibility" value="public"> Public</label>
+    </div>
   </div>
 
   <div class="section">
@@ -89,16 +85,18 @@
   <div id="location-section" class="section"></div>
 
   <div class="section">
-    <label for="details">Details (key-value)</label>
-    <textarea id="details" rows="4" placeholder="Hours: 9am - 9pm\nPhone: +91...\nInfo: Fresh produce daily"></textarea>
+    <label>Flexibutes</label>
+    <div id="flex-list" class="flex-list"></div>
+    <button type="button" onclick="addFlexField()">➕ Add Detail</button>
   </div>
 
   <div class="section">
-    <label for="mediaLinks">Media (image/document links)</label>
-    <textarea id="mediaLinks" rows="3" placeholder="Paste image/document URLs, one per line"></textarea>
+    <label>Media Links</label>
+    <div id="media-list" class="media-list"></div>
+    <button type="button" onclick="addMediaField()">➕ Add Media</button>
   </div>
 
-  <button onclick="submitThing()">➕ Add V8</button>
+  <button onclick="submitThing()">➕ Add Version 9.0</button>
 
   <script>
     const firebaseConfig = {
@@ -119,21 +117,38 @@
       }
     });
 
+    function addFlexField(key = '', value = '') {
+      const container = document.getElementById("flex-list");
+      const row = document.createElement("div");
+      row.className = "row";
+      row.innerHTML = `<input placeholder="Key" value="${key}"><input placeholder="Value" value="${value}">`;
+      container.appendChild(row);
+    }
+
+    function addMediaField(link = '') {
+      const container = document.getElementById("media-list");
+      const input = document.createElement("input");
+      input.placeholder = "Paste image/document URL...";
+      input.value = link;
+      container.appendChild(input);
+    }
+
     function submitThing() {
       const name = document.getElementById("thing-name").value.trim();
-      const visibility = document.getElementById("visibility").value;
+      const visibility = document.querySelector('input[name="visibility"]:checked').value;
       const isLocationSource = document.getElementById("isLocationSource").checked;
-      const detailsRaw = document.getElementById("details").value.trim();
-      const mediaRaw = document.getElementById("mediaLinks").value.trim();
       const location = window.getSelectedLocation ? window.getSelectedLocation() : null;
 
       const details = {};
-      detailsRaw.split("\n").forEach(line => {
-        const [key, ...rest] = line.split(":");
-        if (key && rest.length > 0) details[key.trim()] = rest.join(":").trim();
+      document.querySelectorAll("#flex-list .row").forEach(row => {
+        const inputs = row.querySelectorAll("input");
+        if (inputs[0].value && inputs[1].value) {
+          details[inputs[0].value.trim()] = inputs[1].value.trim();
+        }
       });
 
-      const media = mediaRaw.split("\n").filter(x => x.trim());
+      const media = Array.from(document.querySelectorAll("#media-list input"))
+                        .map(i => i.value.trim()).filter(x => x);
 
       const data = {
         name,
@@ -144,6 +159,7 @@
         flexibutes: details,
         media
       };
+
       if (location) {
         data.lat = location.lat;
         data.long = location.long;
@@ -157,6 +173,9 @@
         alert("❌ Failed to save. Check console.");
       });
     }
+
+    addFlexField();
+    addMediaField();
   </script>
 </body>
 </html>
