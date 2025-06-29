@@ -131,6 +131,21 @@ function toggleLocationPicker() {
     }, err => {
       alert("Location access denied. Please allow access.");
     });
+  } else {
+    selectedLocation = null; // allow user to pick from dropdown if not source
+  }
+}
+  const isSource = document.getElementById('isLocationSource').checked;
+  if (isSource) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      selectedLocation = {
+        lat: pos.coords.latitude.toFixed(5),
+        long: pos.coords.longitude.toFixed(5),
+        source: 'device'
+      };
+    }, err => {
+      alert("Location access denied. Please allow access.");
+    });
   }
 }
 
@@ -143,7 +158,10 @@ function updateThing() {
     return { key: k.value.trim(), val: v.value.trim() };
   }).filter(kv => kv.key && kv.val);
   const media = [...document.querySelectorAll('#media-container input')].map(input => input.value.trim()).filter(Boolean);
-  const location = isLocationSource ? selectedLocation : getSelectedLocation();
+  let location = getSelectedLocation();
+  if (isLocationSource && selectedLocation) {
+    location = selectedLocation;
+  }
 
   db.collection("things").doc(thingId).update({
     name, visibility, flexibutes, media, isLocationSource, location
