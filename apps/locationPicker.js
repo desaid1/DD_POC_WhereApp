@@ -7,19 +7,35 @@ function loadLocationPicker(containerId, userId, db) {
 
   console.log("📌 Location Picker: Initializing with userId:", userId);
 
-  // Create the smart bar
-  const smartBar = document.createElement("div");
-  smartBar.className = "smart-bar";
-  smartBar.style.position = "relative";
+  // Wrapper for styling
+  const wrapper = document.createElement("div");
+  wrapper.style.display = "flex";
+  wrapper.style.flexDirection = "column";
+  wrapper.style.gap = "10px";
 
+  // Dropdown
+  const dropdown = document.createElement("select");
+  dropdown.style.padding = "10px";
+  dropdown.style.fontSize = "16px";
+  dropdown.style.borderRadius = "6px";
+  dropdown.style.border = "1px solid #ccc";
+
+  const defaultOpt = document.createElement("option");
+  defaultOpt.text = "Select from saved location sources...";
+  dropdown.appendChild(defaultOpt);
+
+  // Input box (readonly)
   const input = document.createElement("input");
   input.type = "text";
-  input.placeholder = "Select location source...";
+  input.placeholder = "Selected location will appear here...";
+  input.readOnly = true;
+  input.style.padding = "10px";
+  input.style.fontSize = "16px";
+  input.style.borderRadius = "6px";
+  input.style.border = "1px solid #ccc";
+  input.style.backgroundColor = "#f9f9f9";
 
-  smartBar.appendChild(input);
-  container.appendChild(smartBar);
-
-  // Load location sources from user's data
+  // Load location sources from Firestore
   db.collection("things")
     .where("userId", "==", userId)
     .where("isLocationSource", "==", true)
@@ -27,11 +43,6 @@ function loadLocationPicker(containerId, userId, db) {
     .then(snapshot => {
       console.log("📌 Location Picker: Query completed. Docs found:", snapshot.size);
       if (!snapshot.empty) {
-        const dropdown = document.createElement("select");
-        const defaultOpt = document.createElement("option");
-        defaultOpt.text = "Select from saved location sources...";
-        dropdown.appendChild(defaultOpt);
-
         snapshot.forEach(doc => {
           const data = doc.data();
           console.log("📌 Found location source:", data.name);
@@ -51,7 +62,9 @@ function loadLocationPicker(containerId, userId, db) {
           }
         };
 
-        container.insertBefore(dropdown, smartBar);
+        wrapper.appendChild(dropdown);
+        wrapper.appendChild(input);
+        container.appendChild(wrapper);
       } else {
         console.warn("⚠️ No location sources found for user:", userId);
         const message = document.createElement("div");
