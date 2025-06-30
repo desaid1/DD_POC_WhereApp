@@ -74,7 +74,7 @@
   </style>
 </head>
 <body>
-<h2>Edit Thing</h2>
+<h2 id="form-title">Edit Thing</h2>
 <label>Name</label>
 <input id="thing-name" type="text">
 <label>Visibility</label>
@@ -95,8 +95,8 @@
   <td><label for="isLocationSource">Mark as Location Source</label></td>
 </tr></table>
 <div id="location-section" style="margin-bottom: 10px;"></div>
-<button onclick="updateThing()">Save Changes</button>
-<button class="danger" onclick="deleteThing()">Delete Thing</button>
+<button id="save-btn" onclick="saveThing()">Save Changes</button>
+<button id="delete-btn" class="danger" onclick="deleteThing()">Delete Thing</button>
 
 <script>
 const firebaseConfig = {
@@ -108,8 +108,36 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-let thingId = new URLSearchParams(window.location.search).get("id");
+let urlParams = new URLSearchParams(window.location.search);
+let thingId = urlParams.get("id");
+let isCopyMode = urlParams.get("copy") === 'true';
 let userId = null;
+
+auth.signInAnonymously().then(res => {
+  userId = res.user.uid;
+  if (!thingId) return;
+
+  db.collection("things").doc(thingId).get().then(doc => {
+    if (!doc.exists) return alert("Thing not found");
+    const data = doc.data();
+    document.getElementById('thing-name').value = data.name || '';
+    document.getElementById('thing-visibility').value = data.visibility || 'private';
+    document.getElementById('isLocationSource').checked = !!data.isLocationSource;
+    (data.flexibutes || []).forEach(({key, val}) => addFlexibute(key, val));
+    (data.media || []).forEach(m => addMediaLink(m));
+
+    if (typeof window.loadLocationPickerIfReady === 'function') {
+      window.loadLocationPickerIfReady("location-section", userId, db);
+    }
+
+    if (isCopyMode) {
+      thingId = null; // clear thingId to ensure new doc is created
+      document.getElementById('form-title').innerText = 'Copy Thing';
+      document.getElementById('save-btn').innerText = 'Add Copy';
+      document.getElementById('delete-btn').style.display = 'none';
+    }
+  });
+});
 
 function addFlexibute(key = '', val = '') {
   const div = document.createElement('div');
@@ -127,7 +155,7 @@ function getSelectedLocation() {
   return (typeof window.getSelectedLocation === 'function') ? window.getSelectedLocation() : null;
 }
 
-function updateThing() {
+function saveThing() {
   const name = document.getElementById('thing-name').value.trim();
   const visibility = document.getElementById('thing-visibility').value;
   const isLocationSource = document.getElementById('isLocationSource').checked;
@@ -138,18 +166,29 @@ function updateThing() {
   const media = [...document.querySelectorAll('#media-container input')].map(input => input.value.trim()).filter(Boolean);
   const location = getSelectedLocation();
 
-  db.collection("things").doc(thingId).update({
-    name, visibility, flexibutes, media, isLocationSource, location
-  }).then(() => {
-    alert("✅ Thing updated successfully!");
-    window.location.href = "index.html";
-  }).catch(e => {
-    console.error("Error updating:", e);
-    alert("❌ Failed to update thing.");
-  });
+  const payload = { name, visibility, flexibutes, media, isLocationSource, location };
+
+  if (thingId) {
+    db.collection("things").doc(thingId).update(payload).then(() => {
+      alert("✅ Thing updated successfully!");
+      window.location.href = "index.html";
+    }).catch(e => {
+      console.error("Error updating:", e);
+      alert("❌ Failed to update thing.");
+    });
+  } else {
+    db.collection("things").add({ ...payload, userId, createdAt: new Date().toISOString() }).then(() => {
+      alert("✅ Thing copy added successfully!");
+      window.location.href = "index.html";
+    }).catch(e => {
+      console.error("Error adding:", e);
+      alert("❌ Failed to add copy.");
+    });
+  }
 }
 
 function deleteThing() {
+  if (!thingId) return;
   if (!confirm("Are you sure you want to delete this thing? This action cannot be undone.")) return;
   db.collection("things").doc(thingId).delete().then(() => {
     alert("🗑️ Thing deleted successfully!");
@@ -159,23 +198,6 @@ function deleteThing() {
     alert("❌ Failed to delete thing.");
   });
 }
-
-auth.signInAnonymously().then(res => {
-  userId = res.user.uid;
-  db.collection("things").doc(thingId).get().then(doc => {
-    if (!doc.exists) return alert("Thing not found");
-    const data = doc.data();
-    document.getElementById('thing-name').value = data.name || '';
-    document.getElementById('thing-visibility').value = data.visibility || 'private';
-    document.getElementById('isLocationSource').checked = !!data.isLocationSource;
-    (data.flexibutes || []).forEach(({key, val}) => addFlexibute(key, val));
-    (data.media || []).forEach(m => addMediaLink(m));
-
-    if (typeof window.loadLocationPickerIfReady === 'function') {
-      window.loadLocationPickerIfReady("location-section", userId, db);
-    }
-  });
-});
 </script>
 </body>
 </html>
