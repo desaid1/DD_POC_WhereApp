@@ -123,7 +123,24 @@
     .tag.public { background-color: #4caf50; color: white; }
     .tag.group { background-color: #ff9800; color: white; }
     .tag.private { background-color: #f44336; color: white; }
-  </style>
+  #addThingBtn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: #A8D5BA;
+  color: white;
+  font-size: 36px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+</style>
 </head>
 <body>
 <h1>WhereApp</h1>
@@ -132,6 +149,11 @@
 <div class="score" id="score"></div>
 <div class="results" id="thingsList"></div>
 <div class="log" id="log"></div>
+
+<!-- Floating Add Button -->
+<button id="addThingBtn" onclick="location.href='add.html'">
+  <span class="material-icons">add_circle</span>
+</button>
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyAatek1caogYhCY0rXj9YrGC32E0lRJtUs",
