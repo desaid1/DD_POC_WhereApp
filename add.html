@@ -101,6 +101,11 @@
   <td style="width: 40px;"><input type="checkbox" id="isLocationSource" onchange="toggleDropdownState()"></td>
   <td><label for="isLocationSource">Mark as Location Source</label></td>
 </tr></table>
+<label>Allow Copy</label>
+<table><tr>
+  <td style="width: 40px;"><input type="checkbox" id="allowCopy"></td>
+  <td><label for="allowCopy">Allow others to copy this Thing</label></td>
+</tr></table>
 <div id="location-section" style="margin-bottom: 10px;"></div>
 <button onclick="submitThing()">Add Thing</button>
 
@@ -116,6 +121,13 @@ const db = firebase.firestore();
 
 let userId = null;
 let selectedLocation = null;
+
+auth.signInAnonymously().then(res => {
+  userId = res.user.uid;
+  if (typeof window.loadLocationPickerIfReady === 'function') {
+    window.loadLocationPickerIfReady("location-section", userId, db);
+  }
+});
 
 function addDetail() {
   const container = document.getElementById('details-container');
@@ -137,13 +149,6 @@ function toggleDropdownState() {
   if (dropdown) dropdown.disabled = isSource;
 }
 
-auth.signInAnonymously().then(res => {
-  userId = res.user.uid;
-  if (typeof window.loadLocationPickerIfReady === 'function') {
-    window.loadLocationPickerIfReady("location-section", userId, db);
-  }
-});
-
 function getSelectedLocation() {
   return (typeof window.getSelectedLocation === 'function') ? window.getSelectedLocation() : null;
 }
@@ -152,6 +157,7 @@ function submitThing() {
   const name = document.getElementById('thing-name').value.trim();
   const visibility = document.getElementById('thing-visibility').value;
   const isLocationSource = document.getElementById('isLocationSource').checked;
+  const isCopyAllowed = document.getElementById('allowCopy').checked;
 
   if (!name) return alert("Please enter a name.");
   if (!userId) return alert("User not signed in yet.");
@@ -163,51 +169,43 @@ function submitThing() {
 
   const media = [...document.querySelectorAll('#media-container input')].map(input => input.value.trim()).filter(Boolean);
 
+  const location = isLocationSource
+    ? { lat: 0, long: 0, source: 'device' } // fallback placeholder if geolocation fails
+    : getSelectedLocation();
+
   if (isLocationSource) {
     navigator.geolocation.getCurrentPosition(pos => {
-      selectedLocation = {
+      storeThing({
         lat: pos.coords.latitude.toFixed(5),
         long: pos.coords.longitude.toFixed(5),
         source: 'device'
-      };
-      storeThing(selectedLocation);
-    }, err => {
-      alert("Location access denied.");
-    });
+      });
+    }, () => alert("Location access denied."));
   } else {
-    selectedLocation = getSelectedLocation();
-    storeThing(selectedLocation);
+    storeThing(location);
   }
-}
 
-function storeThing(location) {
-  const name = document.getElementById('thing-name').value.trim();
-  const visibility = document.getElementById('thing-visibility').value;
-  const isLocationSource = document.getElementById('isLocationSource').checked;
-  const details = [...document.querySelectorAll('#details-container > div')].map(div => {
-    const [k, v] = div.querySelectorAll('input,textarea');
-    return { key: k.value.trim(), val: v.value.trim() };
-  }).filter(kv => kv.key && kv.val);
-  const media = [...document.querySelectorAll('#media-container input')].map(input => input.value.trim()).filter(Boolean);
+  function storeThing(location) {
+    const thing = {
+      name,
+      visibility,
+      isLocationSource,
+      location,
+      flexibutes: details,
+      media,
+      userId,
+      copy: isCopyAllowed,
+      createdAt: new Date().toISOString()
+    };
 
-  const thing = {
-    name,
-    visibility,
-    isLocationSource,
-    location,
-    flexibutes: details,
-    media,
-    userId,
-    createdAt: new Date().toISOString()
-  };
-
-  db.collection("things").add(thing).then(() => {
-    alert("✅ Thing added successfully!");
-    window.location.href = "index.html";
-  }).catch(err => {
-    console.error("Error adding thing:", err);
-    alert("❌ Failed to add thing.");
-  });
+    db.collection("things").add(thing).then(() => {
+      alert("✅ Thing added successfully!");
+      window.location.href = "index.html";
+    }).catch(err => {
+      console.error("Error adding thing:", err);
+      alert("❌ Failed to add thing.");
+    });
+  }
 }
 
 function searchThings() {
@@ -219,25 +217,10 @@ function searchThings() {
     .where("userId", "==", userId)
     .get()
     .then(snapshot => {
-      const filtered = snapshot.docs.filter(doc => {
-        const data = doc.data();
-        return data.name?.toLowerCase().includes(query);
-      });
-      resultsContainer.innerHTML = '';
-      if (filtered.length === 0) {
-        resultsContainer.innerHTML = `<p>No match found.</p>`;
-        return;
-      }
-      filtered.forEach(doc => {
-        const data = doc.data();
-        const div = document.createElement("div");
-        div.className = "search-result";
-        div.innerHTML = `
-          <strong>${data.name}</strong><br>
-          <button onclick="window.location.href='edit.html?id=${doc.id}'">Edit</button>
-        `;
-        resultsContainer.appendChild(div);
-      });
+      const filtered = snapshot.docs.filter(doc => doc.data().name?.toLowerCase().includes(query));
+      resultsContainer.innerHTML = filtered.length
+        ? filtered.map(doc => `<div class='search-result'><strong>${doc.data().name}</strong><br><button onclick=\"window.location.href='edit.html?id=${doc.id}'\">Edit</button></div>`).join('')
+        : '<p>No match found.</p>';
     });
 }
 </script>
