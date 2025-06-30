@@ -154,6 +154,7 @@ const firebaseConfig = {
   projectId: "whereapp-ideasdesai"
 };
 firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 const auth = firebase.auth();
 
 function fetchThings() {
