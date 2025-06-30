@@ -1,4 +1,173 @@
-/* unchanged head and body */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WhereApp – Simplifying Sustainability</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 30px 20px;
+      font-family: 'Nunito Sans', sans-serif;
+      background: white;
+      color: black;
+      max-width: 420px;
+      margin: auto;
+      position: relative;
+    }
+    h1 {
+      font-size: 28px;
+      text-align: left;
+      margin-bottom: 20px;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 16px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 2px solid #A8D5BA;
+      margin-bottom: 20px;
+      background-color: white;
+      color: black;
+    }
+    .apps {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    button {
+      background-color: #A8D5BA;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #91c3aa;
+    }
+    .results, .log {
+      margin-top: 30px;
+    }
+    .thing {
+      background: #f5f5f5;
+      padding: 14px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      max-height: 100px;
+      overflow: hidden;
+      position: relative;
+      transition: max-height 0.3s ease;
+    }
+    .thing.expanded {
+      max-height: none;
+    }
+    .fade-out {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 40px;
+      background: linear-gradient(to bottom, rgba(245,245,245,0), rgba(245,245,245,1));
+    }
+    .thing h3 {
+      margin: 0 0 5px;
+      color: #333;
+    }
+    .thing p {
+      margin: 2px 0;
+      color: #555;
+    }
+    .media-img {
+      max-width: 100px;
+      border-radius: 4px;
+      margin: 6px 4px 0 0;
+    }
+    .score {
+      margin-top: 10px;
+      font-size: 16px;
+    }
+    .log {
+      font-family: monospace;
+      color: #555;
+    }
+    .edit-btn {
+      margin-top: 10px;
+      background-color: #A8D5BA;
+      color: white;
+    }
+    .toggle-details {
+      margin-top: 10px;
+      background-color: transparent;
+      color: #007b8f;
+      font-size: 14px;
+      text-decoration: underline;
+      border: none;
+      cursor: pointer;
+    }
+    #addThingBtn {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background-color: #A8D5BA;
+      color: white;
+      font-size: 36px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+<h1>WhereApp</h1>
+<input type="text" id="searchInput" placeholder="Search or trigger..." oninput="renderThings()" />
+<div class="apps" id="buttons"></div>
+<div class="score" id="score"></div>
+<div class="results" id="thingsList"></div>
+<div class="log" id="log"></div>
+
+<!-- Floating Add Button -->
+<button id="addThingBtn" onclick="location.href='add.html'">
+  <span class="material-icons">add_circle</span>
+</button>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAatek1caogYhCY0rXj9YrGC32E0lRJtUs",
+  authDomain: "whereapp-ideasdesai.firebaseapp.com",
+  projectId: "whereapp-ideasdesai"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let userId = null;
+let allThings = [];
+let score = 0;
+let currentLat = null;
+let currentLong = null;
+
+auth.signInAnonymously().then(res => {
+  userId = res.user.uid;
+  fetchThings();
+  loadApps();
+});
 
 function renderThings() {
   const query = document.getElementById('searchInput').value.toLowerCase();
@@ -58,3 +227,109 @@ function renderThings() {
     });
   });
 }
+
+function toggleExpand(button) {
+  const card = button.closest('.thing');
+  const expanded = card.classList.toggle('expanded');
+  const fade = card.querySelector('.fade-out');
+  if (expanded) {
+    button.textContent = 'Less';
+    fade.style.display = 'none';
+  } else {
+    button.textContent = 'More';
+    fade.style.display = '';
+  }
+}
+
+function getLocation(callback) {
+  if (!navigator.geolocation) {
+    alert("Geolocation not supported");
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(pos => {
+    currentLat = pos.coords.latitude.toFixed(5);
+    currentLong = pos.coords.longitude.toFixed(5);
+    callback();
+  }, err => {
+    alert("Location access denied.");
+  });
+}
+
+function logAction(action) {
+  const logDiv = document.getElementById("log");
+  const timestamp = new Date().toLocaleTimeString();
+  logDiv.innerHTML += `[${timestamp}] ${action}<br>`;
+}
+
+function logToFirestore(appId, scoreDelta) {
+  db.collection("interactions").add({
+    userId: userId,
+    appId: appId,
+    scoreAdded: scoreDelta,
+    lat: currentLat,
+    long: currentLong,
+    timestamp: new Date()
+  }).catch(console.error);
+}
+
+function updateScoreDisplay() {
+  document.getElementById("score").innerText = `Score: ${score}`;
+}
+
+async function loadApps() {
+  const files = ["owl", "unicorn", "hello"];
+  const apps = await Promise.all(
+    files.map(async id => {
+      const res = await fetch(`apps/${id}.json`);
+      const app = await res.json();
+      return app;
+    })
+  );
+  renderButtons(apps);
+}
+
+function renderButtons(apps) {
+  const container = document.getElementById("buttons");
+  container.innerHTML = "";
+  apps.forEach(app => {
+    const btn = document.createElement("button");
+    btn.textContent = app.label;
+    btn.onclick = () => {
+      const run = () => {
+        score += app.score;
+        updateScoreDisplay();
+        logToFirestore(app.id, app.score);
+
+        if (app.whatsappMessage) {
+          let message = app.whatsappMessage
+            .replace("{{score}}", score)
+            .replace("{{lat}}", currentLat)
+            .replace("{{long}}", currentLong);
+
+          if (message.includes("{{mapLink}}")) {
+            const mapUrl = `https://maps.google.com/?q=${currentLat},${currentLong}`;
+            message = message.replace("{{mapLink}}", mapUrl);
+          }
+
+          const encoded = encodeURIComponent(message);
+          window.open(`https://wa.me/?text=${encoded}`);
+          logAction(`${app.label} shared on WhatsApp.`);
+        } else {
+          logAction(`${app.label} clicked. (+${app.score}) at ${currentLat}, ${currentLong}`);
+        }
+      };
+
+      if (app.useLocation) {
+        getLocation(run);
+      } else {
+        run();
+      }
+    };
+    container.appendChild(btn);
+  });
+}
+
+updateScoreDisplay();
+</script>
+</body>
+</html>
