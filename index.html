@@ -47,6 +47,9 @@
       cursor: pointer;
     }
     .thing {
+      max-height: 300px;
+      overflow: hidden;
+      position: relative;
       background: #303134;
       padding: 14px;
       border-radius: 8px;
@@ -93,6 +96,21 @@
     .tag.private {
       background-color: #f44336;
       color: white;
+    }
+      .thing.expanded {
+      max-height: none;
+    }
+    .toggle-btn {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background: #1a73e8;
+      color: white;
+      padding: 4px 10px;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -166,6 +184,15 @@
         <p><strong>Visibility:</strong> ${thing.visibility || 'private'}</p>
         <button class="edit-btn" onclick="location.href='edit.html?id=${thing.id}'">✏️ Edit</button>
       `;
+
+            const toggle = document.createElement('button');
+      toggle.className = 'toggle-btn';
+      toggle.textContent = 'More';
+      toggle.onclick = () => {
+        div.classList.toggle('expanded');
+        toggle.textContent = div.classList.contains('expanded') ? 'Less' : 'More';
+      };
+      div.appendChild(toggle);
 
       container.appendChild(div);
     });
