@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Edit Thing</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -19,41 +19,8 @@
       margin: auto;
     }
     h2 {
-      text-align: left;
       font-size: 24px;
-    }
-    input, textarea, select {
-      background-color: white;
-      color: black;
-      border: 2px solid #A8D5BA;
-      border-radius: 8px;
-      padding: 8px 16px;
-      font-size: 16px;
-      margin-bottom: 12px;
-      width: 100%;
-    }
-    button {
-      background-color: #A8D5BA;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
-      font-size: 16px;
-      transition: background-color 0.3s ease;
-      cursor: pointer;
-      margin-bottom: 12px;
-    }
-    button:hover {
-      background-color: #91c3aa;
-    }
-    label {
-      font-weight: bold;
-      margin-top: 10px;
-      display: block;
-    }
-    #flexibutes-container div,
-    #media-container div {
-      margin-bottom: 12px;
+      margin-bottom: 16px;
     }
     table {
       width: 100%;
@@ -65,128 +32,60 @@
       vertical-align: middle;
       border: 1px dashed gray;
     }
+    input[type="checkbox"] {
+      transform: scale(1.3);
+    }
   </style>
 </head>
 <body>
-<h2>Edit Thing</h2>
-<div id="location-section" style="margin-bottom: 10px;"></div>
-<label>Name</label>
-<input id="thing-name" type="text">
-<label>Visibility</label>
-<select id="thing-visibility">
-  <option value="private">Private</option>
-  <option value="group">Group</option>
-  <option value="public">Public</option>
-</select>
-<label>Flexibutes</label>
-<div id="flexibutes-container"></div>
-<button onclick="addFlexibute()">Add Detail</button>
-<label>Media Links</label>
-<div id="media-container"></div>
-<button onclick="addMediaLink()">Add Media Link</button>
-<label>Mark as Location Source</label>
-<table><tr>
-  <td style="width: 40px;"><input type="checkbox" id="isLocationSource"></td>
-  <td><label for="isLocationSource">Mark as Location Source</label></td>
-</tr></table>
-<button onclick="updateThing()">Save Changes</button>
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyAatek1caogYhCY0rXj9YrGC32E0lRJtUs",
-  authDomain: "whereapp-ideasdesai.firebaseapp.com",
-  projectId: "whereapp-ideasdesai"
-};
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-const db = firebase.firestore();
+  <h2>Edit Thing</h2>
 
-let thingId = new URLSearchParams(window.location.search).get("id");
-let userId = null;
-let selectedLocation = null;
+  <label>Mark as Location Source</label>
+  <table>
+    <tr>
+      <td style="width: 40px;"><input type="checkbox" id="isLocationSource" /></td>
+      <td><label for="isLocationSource">Mark as Location Source</label></td>
+    </tr>
+  </table>
 
-function addFlexibute(key = '', val = '') {
-  const div = document.createElement('div');
-  div.innerHTML = `<input placeholder="Key" value="${key}"><textarea placeholder="Value">${val}</textarea>`;
-  document.getElementById('flexibutes-container').appendChild(div);
-}
+  <div id="location-section" style="margin-bottom: 20px;"></div>
 
-function addMediaLink(url = '') {
-  const div = document.createElement('div');
-  div.innerHTML = `<input placeholder="Image or File URL" value="${url}">`;
-  document.getElementById('media-container').appendChild(div);
-}
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAatek1caogYhCY0rXj9YrGC32E0lRJtUs",
+      authDomain: "whereapp-ideasdesai.firebaseapp.com",
+      projectId: "whereapp-ideasdesai"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
 
-function getSelectedLocation() {
-  return (typeof window.getSelectedLocation === 'function') ? window.getSelectedLocation() : null;
-}
+    let userId = null;
+    let selectedLocation = null;
 
-function updateThing() {
-  const name = document.getElementById('thing-name').value.trim();
-  const visibility = document.getElementById('thing-visibility').value;
-  const isLocationSource = document.getElementById('isLocationSource').checked;
+    auth.signInAnonymously().then(res => {
+      userId = res.user.uid;
+      if (typeof window.loadLocationPicker === 'function') {
+        window.loadLocationPicker("location-section", userId, db);
+      }
 
-  const flexibutes = [...document.querySelectorAll('#flexibutes-container > div')].map(div => {
-    const [k, v] = div.querySelectorAll('input,textarea');
-    return { key: k.value.trim(), val: v.value.trim() };
-  }).filter(kv => kv.key && kv.val);
-
-  const media = [...document.querySelectorAll('#media-container input')].map(input => input.value.trim()).filter(Boolean);
-
-  let location = null;
-  if (isLocationSource) {
-    location = selectedLocation;
-  } else {
-    location = getSelectedLocation();
-  }
-
-  db.collection("things").doc(thingId).update({
-    name, visibility, flexibutes, media, isLocationSource, location
-  }).then(() => {
-    alert("✅ Thing updated successfully!");
-    window.location.href = "index.html";
-  }).catch(e => {
-    console.error("Error updating:", e);
-    alert("❌ Failed to update thing.");
-  });
-}
-
-auth.signInAnonymously().then(res => {
-  userId = res.user.uid;
-  db.collection("things").doc(thingId).get().then(doc => {
-    if (!doc.exists) return alert("Thing not found");
-    const data = doc.data();
-    document.getElementById('thing-name').value = data.name || '';
-    document.getElementById('thing-visibility').value = data.visibility || 'private';
-    document.getElementById('isLocationSource').checked = !!data.isLocationSource;
-    (data.flexibutes || []).forEach(({key, val}) => addFlexibute(key, val));
-    (data.media || []).forEach(m => addMediaLink(m));
-    selectedLocation = data.location || null;
-
-    if (typeof window.loadLocationPicker === 'function') {
-      window.loadLocationPicker("location-section", userId, db);
-    }
-  });
-
-  // Load the dropdown immediately on load
-  if (typeof window.loadLocationPicker === 'function') {
-    window.loadLocationPicker("location-section", userId, db);
-  }
-
-  // Geolocate only if checkbox is clicked
-  document.getElementById('isLocationSource').addEventListener('change', () => {
-    if (document.getElementById('isLocationSource').checked) {
-      navigator.geolocation.getCurrentPosition(pos => {
-        selectedLocation = {
-          lat: pos.coords.latitude.toFixed(5),
-          long: pos.coords.longitude.toFixed(5),
-          source: 'device'
-        };
-      }, err => {
-        alert("Location access denied. Please allow access.");
+      document.getElementById('isLocationSource').addEventListener('change', () => {
+        if (document.getElementById('isLocationSource').checked) {
+          navigator.geolocation.getCurrentPosition(pos => {
+            selectedLocation = {
+              lat: pos.coords.latitude.toFixed(5),
+              long: pos.coords.longitude.toFixed(5),
+              source: 'device'
+            };
+            console.log("📍 Device location set:", selectedLocation);
+          }, err => {
+            alert("Location access denied.");
+          });
+        } else {
+          selectedLocation = null;
+        }
       });
-    }
-  });
-});
-</script>
+    });
+  </script>
 </body>
 </html>
