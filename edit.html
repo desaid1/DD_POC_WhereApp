@@ -69,6 +69,7 @@
 </head>
 <body>
 <h2>Edit Thing</h2>
+<div id="location-section" style="margin-bottom: 10px;"></div>
 <label>Name</label>
 <input id="thing-name" type="text">
 <label>Visibility</label>
@@ -88,7 +89,6 @@
   <td style="width: 40px;"><input type="checkbox" id="isLocationSource" onchange="toggleLocationPicker()"></td>
   <td><label for="isLocationSource">Mark as Location Source</label></td>
 </tr></table>
-<div id="location-section" style="margin-bottom: 10px;"></div>
 <button onclick="updateThing()">Save Changes</button>
 <script>
 const firebaseConfig = {
