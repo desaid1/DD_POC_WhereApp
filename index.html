@@ -6,16 +6,7 @@
   <title>WhereApp – Simplifying Sustainability</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js">function fetchThings() {
-  db.collection("things")
-    .where("userId", "==", userId)
-    .get()
-    .then(snapshot => {
-      allThings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      renderThings();
-    });
-}
-</script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <style>
@@ -164,7 +155,17 @@ const firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
-const db = firebase.firestore();
+$1
+
+function fetchThings() {
+  db.collection("things")
+    .where("userId", "==", userId)
+    .get()
+    .then(snapshot => {
+      allThings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      renderThings();
+    });
+}
 
 let userId = null;
 let allThings = [];
