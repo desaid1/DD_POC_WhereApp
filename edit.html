@@ -134,6 +134,10 @@ function toggleLocationPicker() {
   }
 }
 
+function getSelectedLocation() {
+  return (typeof window.getSelectedLocation === 'function') ? window.getSelectedLocation() : null;
+}
+
 function updateThing() {
   const name = document.getElementById('thing-name').value.trim();
   const visibility = document.getElementById('thing-visibility').value;
@@ -143,10 +147,8 @@ function updateThing() {
     return { key: k.value.trim(), val: v.value.trim() };
   }).filter(kv => kv.key && kv.val);
   const media = [...document.querySelectorAll('#media-container input')].map(input => input.value.trim()).filter(Boolean);
-  let location = getSelectedLocation();
-  if (isLocationSource && selectedLocation) {
-    location = selectedLocation;
-  }
+
+  const location = isLocationSource ? selectedLocation : getSelectedLocation();
 
   db.collection("things").doc(thingId).update({
     name, visibility, flexibutes, media, isLocationSource, location
@@ -159,12 +161,11 @@ function updateThing() {
   });
 }
 
-function getSelectedLocation() {
-  return (typeof window.getSelectedLocation === 'function') ? window.getSelectedLocation() : null;
-}
-
 auth.signInAnonymously().then(res => {
   userId = res.user.uid;
+  if (typeof window.loadLocationPicker === 'function') {
+    window.loadLocationPicker("location-section", userId, db);
+  }
   db.collection("things").doc(thingId).get().then(doc => {
     if (!doc.exists) return alert("Thing not found");
     const data = doc.data();
@@ -174,10 +175,6 @@ auth.signInAnonymously().then(res => {
     (data.flexibutes || []).forEach(({key, val}) => addFlexibute(key, val));
     (data.media || []).forEach(m => addMediaLink(m));
     selectedLocation = data.location || null;
-
-    if (typeof window.loadLocationPicker === 'function') {
-      window.loadLocationPicker("location-section", userId, db);
-    }
   });
 });
 </script>
