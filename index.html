@@ -159,7 +159,6 @@ const auth = firebase.auth();
 
 function fetchThings() {
   db.collection("things")
-    .where("userId", "==", userId)
     .get()
     .then(snapshot => {
       allThings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -211,12 +210,13 @@ function renderThings() {
       .join('');
 
     div.innerHTML = `
-      <h3>${thing.name || 'Untitled Thing'}</h3>
-      ${mediaImages}<br>
-      ${details}
-      <p><strong>Location:</strong> ${thing.location?.source || 'Unknown'} (${thing.location?.lat}, ${thing.location?.long})</p>
-      <p><strong>Visibility:</strong> ${thing.visibility || 'private'}</p>
-      <button class="edit-btn" onclick="location.href='edit.html?id=${thing.id}'">✏️ Edit</button>
+      <div style="margin-bottom: 6px;">
+        <span style="background-color: ${
+          thing.visibility === 'public' ? '#4caf50' : thing.visibility === 'group' ? '#ffc107' : '#f44336'
+        }; color: white; border-radius: 6px; padding: 2px 8px; font-size: 12px;">
+          ${thing.visibility?.toUpperCase() || 'PRIVATE'}
+        </span>
+      </div>$1<button class=\"edit-btn\" onclick="location.href='edit.html?id=${thing.id}'">✏️ Edit</button>
     `;
 
     container.appendChild(div);
