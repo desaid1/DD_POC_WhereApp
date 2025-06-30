@@ -8,6 +8,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="apps/locationPickerWrapper.js" defer></script>
   <style>
     body {
       font-family: 'Nunito Sans', sans-serif;
@@ -87,16 +88,10 @@ const db = firebase.firestore();
 let userId = null;
 auth.signInAnonymously().then(res => {
   userId = res.user.uid;
-  const script = document.createElement('script');
-  script.src = 'apps/locationPickerWrapper.js';
-  script.onload = () => {
-    if (typeof window.loadLocationPicker === 'function') {
-      window.loadLocationPicker("location-section", userId, db);
-    }
-  };
-  document.body.appendChild(script);
+  if (typeof window.loadLocationPicker === 'function') {
+    window.loadLocationPicker("location-section", userId, db);
+  }
 });
 </script>
 </body>
 </html>
-
