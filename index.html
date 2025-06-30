@@ -185,9 +185,13 @@ function renderThings() {
 
   const filtered = allThings.filter(t => {
     const nameMatch = t.name?.toLowerCase().includes(query);
-    const flexMatch = (t.flexibutes || []).some(({ key, val }) =>
-      key?.toLowerCase().includes(query) || val?.toLowerCase().includes(query)
-    );
+    const flexMatch = Array.isArray(t.flexibutes)
+      ? t.flexibutes.some(({ key, val }) =>
+          key?.toLowerCase().includes(query) || val?.toLowerCase().includes(query)
+        )
+      : Object.entries(t.flexibutes || {}).some(([k, v]) =>
+          k?.toLowerCase().includes(query) || v?.toLowerCase().includes(query)
+        );
     return nameMatch || flexMatch;
   });
 
