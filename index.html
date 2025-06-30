@@ -52,7 +52,6 @@
       -webkit-mask-image: linear-gradient(to bottom, black 250px, transparent 300px);
       max-height: 300px;
       overflow: hidden;
-      position: relative;
       background: #303134;
       padding: 14px;
       border-radius: 8px;
@@ -80,7 +79,7 @@
       border-radius: 6px;
       cursor: pointer;
     }
-      .tag {
+    .tag {
       display: inline-block;
       padding: 2px 8px;
       border-radius: 12px;
@@ -100,7 +99,7 @@
       background-color: #f44336;
       color: white;
     }
-      .thing.expanded {
+    .thing.expanded {
       max-height: none;
       mask-image: none;
       -webkit-mask-image: none;
@@ -181,8 +180,8 @@
         : Object.entries(thing.flexibutes || {}).map(([k, v]) => `<p><strong>${k}:</strong> ${v}</p>`).join('');
 
       div.innerHTML = `
-<span class="tag ${thing.visibility || 'private'}">${thing.visibility || 'private'}</span><br>
-<h3>${thing.name || 'Untitled Thing'}</h3>
+        <span class="tag ${thing.visibility || 'private'}">${thing.visibility || 'private'}</span><br>
+        <h3>${thing.name || 'Untitled Thing'}</h3>
         ${mediaImages}<br>
         ${details}
         <p><strong>Location:</strong> ${thing.location?.source || 'Unknown'} (${thing.location?.lat}, ${thing.location?.long})</p>
@@ -190,7 +189,7 @@
         <button class="edit-btn" onclick="location.href='edit.html?id=${thing.id}'">✏️ Edit</button>
       `;
 
-            const toggle = document.createElement('button');
+      const toggle = document.createElement('button');
       toggle.className = 'toggle-btn';
       toggle.textContent = 'More';
       toggle.onclick = () => {
@@ -198,6 +197,14 @@
         toggle.textContent = div.classList.contains('expanded') ? 'Less' : 'More';
       };
       div.appendChild(toggle);
+
+      if (thing.copy === true) {
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'edit-btn';
+        copyBtn.textContent = '📄 Copy';
+        copyBtn.onclick = () => copyThing(thing);
+        div.appendChild(copyBtn);
+      }
 
       container.appendChild(div);
     });
@@ -236,6 +243,18 @@
 
   function updateScoreDisplay() {
     document.getElementById("score").innerText = `Score: ${score}`;
+  }
+
+  function copyThing(original) {
+    const thingToCopy = Object.assign({}, original);
+    delete thingToCopy.id;
+    thingToCopy.owner = userId;
+    thingToCopy.timestamp = new Date();
+
+    db.collection("things").add(thingToCopy).then(docRef => {
+      logAction(`Copied thing '${original.name}' to your list.`);
+      fetchThings();
+    }).catch(console.error);
   }
 
   async function loadApps() {
