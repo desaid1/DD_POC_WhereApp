@@ -74,6 +74,26 @@
       border-radius: 6px;
       cursor: pointer;
     }
+      .tag {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+    .tag.public {
+      background-color: #4caf50;
+      color: white;
+    }
+    .tag.group {
+      background-color: #ff9800;
+      color: white;
+    }
+    .tag.private {
+      background-color: #f44336;
+      color: white;
+    }
   </style>
 </head>
 <body>
@@ -138,7 +158,8 @@
         : Object.entries(thing.flexibutes || {}).map(([k, v]) => `<p><strong>${k}:</strong> ${v}</p>`).join('');
 
       div.innerHTML = `
-        <h3>${thing.name || 'Untitled Thing'}</h3>
+$1<span class="tag ${thing.visibility || 'private'}">${thing.visibility || 'private'}</span><br>
+$1<h3>${thing.name || 'Untitled Thing'}</h3>
         ${mediaImages}<br>
         ${details}
         <p><strong>Location:</strong> ${thing.location?.source || 'Unknown'} (${thing.location?.lat}, ${thing.location?.long})</p>
