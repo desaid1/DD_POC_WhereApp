@@ -17,6 +17,7 @@
       color: black;
       max-width: 420px;
       margin: auto;
+      position: relative;
     }
     h1 {
       font-size: 28px;
@@ -88,6 +89,23 @@
       background-color: #A8D5BA;
       color: white;
     }
+    #addThingBtn {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+    }
+    #addThingBtn img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
   </style>
 </head>
 <body>
@@ -97,6 +115,9 @@
 <div class="score" id="score"></div>
 <div class="results" id="thingsList"></div>
 <div class="log" id="log"></div>
+<button id="addThingBtn" onclick="location.href='add.html'">
+  <img src="herbal_18912932.png" alt="Add Thing">
+</button>
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyAatek1caogYhCY0rXj9YrGC32E0lRJtUs",
