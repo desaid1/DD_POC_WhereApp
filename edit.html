@@ -133,20 +133,6 @@ function toggleLocationPicker() {
     });
   }
 }
-  }
-  const isSource = document.getElementById('isLocationSource').checked;
-  if (isSource) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      selectedLocation = {
-        lat: pos.coords.latitude.toFixed(5),
-        long: pos.coords.longitude.toFixed(5),
-        source: 'device'
-      };
-    }, err => {
-      alert("Location access denied. Please allow access.");
-    });
-  }
-}
 
 function updateThing() {
   const name = document.getElementById('thing-name').value.trim();
@@ -187,7 +173,13 @@ auth.signInAnonymously().then(res => {
     document.getElementById('isLocationSource').checked = !!data.isLocationSource;
     (data.flexibutes || []).forEach(({key, val}) => addFlexibute(key, val));
     (data.media || []).forEach(m => addMediaLink(m));
-    toggleLocationPicker();
+    selectedLocation = data.location || null;
+
+    // Now safe to load location picker
+    if (typeof window.loadLocationPicker === 'function') {
+      window.loadLocationPicker("location-section", userId, db);
+    }
+  });
     selectedLocation = data.location || null;
   });
 });
