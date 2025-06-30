@@ -117,9 +117,6 @@ function addMediaLink(url = '') {
 }
 
 function toggleLocationPicker() {
-  if (typeof window.loadLocationPicker === 'function') {
-    window.loadLocationPicker("location-section", userId, db);
-  }
   const isSource = document.getElementById('isLocationSource').checked;
   if (isSource) {
     navigator.geolocation.getCurrentPosition(pos => {
@@ -175,12 +172,11 @@ auth.signInAnonymously().then(res => {
     (data.media || []).forEach(m => addMediaLink(m));
     selectedLocation = data.location || null;
 
-    // Now safe to load location picker
     if (typeof window.loadLocationPicker === 'function') {
       window.loadLocationPicker("location-section", userId, db);
     }
   });
-      });
+});
 </script>
 </body>
 </html>
