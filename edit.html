@@ -88,12 +88,7 @@ let userId = null;
 auth.signInAnonymously().then(res => {
   userId = res.user.uid;
   const script = document.createElement('script');
-  script.src = 'apps/locationPicker.js';
-  script.onload = () => {
-    if (typeof window.loadLocationPicker === 'function') {
-      window.loadLocationPicker("location-section", userId, db);
-    }
-  };
+  script.src = 'apps/locationPickerWrapper.js';
   document.body.appendChild(script);
 });
 </script>
