@@ -5,78 +5,111 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WhereApp – Simplifying Sustainability</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <style>
     body {
       margin: 0;
-      padding: 0;
+      padding: 30px 20px;
       font-family: 'Nunito Sans', sans-serif;
-      background: #202124;
-      color: white;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding-top: 60px;
+      background: white;
+      color: black;
+      max-width: 420px;
+      margin: auto;
+      position: relative;
     }
     h1 {
-      font-size: 48px;
-    }
-    input[type="text"] {
-      width: 90%;
-      max-width: 500px;
-      padding: 12px 16px;
-      font-size: 16px;
-      border-radius: 30px;
-      border: none;
-      margin: 20px 0;
-    }
-    .apps, .score, .results, .log {
-      width: 90%;
-      max-width: 600px;
+      font-size: 28px;
+      text-align: left;
       margin-bottom: 20px;
     }
-    .apps button {
-      margin: 5px;
-      padding: 10px 14px;
-      border-radius: 20px;
+    input[type="text"] {
+      width: 100%;
+      padding: 12px 16px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 2px solid #A8D5BA;
+      margin-bottom: 20px;
+      background-color: white;
+      color: black;
+    }
+    .apps {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    button {
+      background-color: #A8D5BA;
+      color: black;
       border: none;
-      background: #5f6368;
-      color: white;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 16px;
       cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #91c3aa;
+    }
+    .results, .log {
+      margin-top: 30px;
     }
     .thing {
-      position: relative;
-      mask-image: linear-gradient(to bottom, black 250px, transparent 300px);
-      -webkit-mask-image: linear-gradient(to bottom, black 250px, transparent 300px);
-      max-height: 300px;
-      overflow: hidden;
-      background: #303134;
+      background: #f5f5f5;
       padding: 14px;
       border-radius: 8px;
       margin-bottom: 15px;
+      border: 1px solid #ddd;
+      position: relative;
+      transition: max-height 0.3s ease;
+      max-height: 300px;
+      mask-image: linear-gradient(to bottom, black 250px, transparent 300px);
+      -webkit-mask-image: linear-gradient(to bottom, black 250px, transparent 300px);
+    }
+    .thing.expanded {
+      max-height: none;
+      mask-image: none;
+      -webkit-mask-image: none;
     }
     .thing h3 {
-      margin: 0 0 8px;
-      color: #fff;
+      margin: 0 0 5px;
+      color: #333;
     }
     .thing p {
       margin: 2px 0;
-      color: #ccc;
+      color: #555;
     }
     .media-img {
       max-width: 100px;
-      margin: 4px;
       border-radius: 4px;
+      margin: 6px 4px 0 0;
+    }
+    .score {
+      margin-top: 10px;
+      font-size: 16px;
+    }
+    .log {
+      font-family: monospace;
+      color: #555;
     }
     .edit-btn {
       margin-top: 10px;
-      background: #4285f4;
-      color: white;
-      padding: 6px 12px;
+      background-color: #A8D5BA;
+      color: black;
+    }
+    .toggle-btn {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      background: #A8D5BA;
+      color: black;
+      padding: 4px 10px;
       border: none;
       border-radius: 6px;
+      font-size: 12px;
       cursor: pointer;
     }
     .tag {
@@ -87,35 +120,9 @@
       font-weight: bold;
       margin-bottom: 6px;
     }
-    .tag.public {
-      background-color: #4caf50;
-      color: white;
-    }
-    .tag.group {
-      background-color: #ff9800;
-      color: white;
-    }
-    .tag.private {
-      background-color: #f44336;
-      color: white;
-    }
-    .thing.expanded {
-      max-height: none;
-      mask-image: none;
-      -webkit-mask-image: none;
-    }
-    .toggle-btn {
-      position: absolute;
-      bottom: 10px;
-      right: 10px;
-      background: #1a73e8;
-      color: white;
-      padding: 4px 10px;
-      border: none;
-      border-radius: 6px;
-      font-size: 12px;
-      cursor: pointer;
-    }
+    .tag.public { background-color: #4caf50; color: white; }
+    .tag.group { background-color: #ff9800; color: white; }
+    .tag.private { background-color: #f44336; color: white; }
   </style>
 </head>
 <body>
@@ -125,7 +132,6 @@
 <div class="score" id="score"></div>
 <div class="results" id="thingsList"></div>
 <div class="log" id="log"></div>
-
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyAatek1caogYhCY0rXj9YrGC32E0lRJtUs",
@@ -159,7 +165,14 @@
     const container = document.getElementById('thingsList');
     container.innerHTML = '';
 
-    const filtered = allThings;
+    const filtered = allThings.filter(t => {
+      const nameMatch = t.name?.toLowerCase().includes(query);
+      const flexMatch = (Array.isArray(t.flexibutes)
+        ? t.flexibutes
+        : Object.entries(t.flexibutes || {}).map(([key, val]) => ({ key, val }))
+      ).some(({ key, val }) => key.toLowerCase().includes(query) || val.toLowerCase().includes(query));
+      return nameMatch || flexMatch;
+    });
 
     if (filtered.length === 0) {
       container.innerHTML = '<p style="color:#aaa">No matching things found.</p>';
@@ -198,14 +211,6 @@
       };
       div.appendChild(toggle);
 
-      if (thing.copy === true) {
-        const copyBtn = document.createElement('button');
-        copyBtn.className = 'edit-btn';
-        copyBtn.textContent = '📄 Copy';
-        copyBtn.onclick = () => copyThing(thing);
-        div.appendChild(copyBtn);
-      }
-
       container.appendChild(div);
     });
   }
@@ -243,18 +248,6 @@
 
   function updateScoreDisplay() {
     document.getElementById("score").innerText = `Score: ${score}`;
-  }
-
-  function copyThing(original) {
-    const thingToCopy = Object.assign({}, original);
-    delete thingToCopy.id;
-    thingToCopy.owner = userId;
-    thingToCopy.timestamp = new Date();
-
-    db.collection("things").add(thingToCopy).then(docRef => {
-      logAction(`Copied thing '${original.name}' to your list.`);
-      fetchThings();
-    }).catch(console.error);
   }
 
   async function loadApps() {
@@ -312,5 +305,3 @@
 
   updateScoreDisplay();
 </script>
-</body>
-</html>
