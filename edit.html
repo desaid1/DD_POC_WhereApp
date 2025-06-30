@@ -85,11 +85,12 @@
 <button onclick="addMediaLink()">Add Media Link</button>
 <label>Mark as Location Source</label>
 <table><tr>
-  <td style="width: 40px;"><input type="checkbox" id="isLocationSource" onchange="toggleLocationPicker()"></td>
+  <td style="width: 40px;"><input type="checkbox" id="isLocationSource"></td>
   <td><label for="isLocationSource">Mark as Location Source</label></td>
 </tr></table>
 <div id="location-section" style="margin-bottom: 10px;"></div>
 <button onclick="updateThing()">Save Changes</button>
+
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyAatek1caogYhCY0rXj9YrGC32E0lRJtUs",
@@ -100,9 +101,8 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-let userId = null;
 let thingId = new URLSearchParams(window.location.search).get("id");
-let selectedLocation = null;
+let userId = null;
 
 function addFlexibute(key = '', val = '') {
   const div = document.createElement('div');
@@ -120,37 +120,16 @@ function getSelectedLocation() {
   return (typeof window.getSelectedLocation === 'function') ? window.getSelectedLocation() : null;
 }
 
-function toggleLocationPicker() {
-  const isSource = document.getElementById('isLocationSource').checked;
-  if (isSource) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      selectedLocation = {
-        lat: pos.coords.latitude.toFixed(5),
-        long: pos.coords.longitude.toFixed(5),
-        source: 'device'
-      };
-    }, err => {
-      alert("Location access denied.");
-    });
-  }
-}
-
 function updateThing() {
   const name = document.getElementById('thing-name').value.trim();
   const visibility = document.getElementById('thing-visibility').value;
   const isLocationSource = document.getElementById('isLocationSource').checked;
-
   const flexibutes = [...document.querySelectorAll('#flexibutes-container > div')].map(div => {
     const [k, v] = div.querySelectorAll('input,textarea');
     return { key: k.value.trim(), val: v.value.trim() };
   }).filter(kv => kv.key && kv.val);
-
   const media = [...document.querySelectorAll('#media-container input')].map(input => input.value.trim()).filter(Boolean);
-
-  let location = getSelectedLocation();
-  if (isLocationSource && selectedLocation) {
-    location = selectedLocation;
-  }
+  const location = getSelectedLocation();
 
   db.collection("things").doc(thingId).update({
     name, visibility, flexibutes, media, isLocationSource, location
@@ -168,15 +147,12 @@ auth.signInAnonymously().then(res => {
   db.collection("things").doc(thingId).get().then(doc => {
     if (!doc.exists) return alert("Thing not found");
     const data = doc.data();
-
     document.getElementById('thing-name').value = data.name || '';
     document.getElementById('thing-visibility').value = data.visibility || 'private';
     document.getElementById('isLocationSource').checked = !!data.isLocationSource;
     (data.flexibutes || []).forEach(({key, val}) => addFlexibute(key, val));
-    (data.media || []).forEach(url => addMediaLink(url));
-    selectedLocation = data.location || null;
+    (data.media || []).forEach(m => addMediaLink(m));
 
-    // Load the locationPicker dropdown
     if (typeof window.loadLocationPickerIfReady === 'function') {
       window.loadLocationPickerIfReady("location-section", userId, db);
     }
