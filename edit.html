@@ -120,6 +120,19 @@ function toggleLocationPicker() {
   if (typeof window.loadLocationPicker === 'function') {
     window.loadLocationPicker("location-section", userId, db);
   }
+  const isSource = document.getElementById('isLocationSource').checked;
+  if (isSource) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      selectedLocation = {
+        lat: pos.coords.latitude.toFixed(5),
+        long: pos.coords.longitude.toFixed(5),
+        source: 'device'
+      };
+    }, err => {
+      alert("Location access denied. Please allow access.");
+    });
+  }
+}
   }
   const isSource = document.getElementById('isLocationSource').checked;
   if (isSource) {
