@@ -47,6 +47,9 @@
       cursor: pointer;
     }
     .thing {
+      position: relative;
+      mask-image: linear-gradient(to bottom, black 250px, transparent 300px);
+      -webkit-mask-image: linear-gradient(to bottom, black 250px, transparent 300px);
       max-height: 300px;
       overflow: hidden;
       position: relative;
@@ -99,6 +102,8 @@
     }
       .thing.expanded {
       max-height: none;
+      mask-image: none;
+      -webkit-mask-image: none;
     }
     .toggle-btn {
       position: absolute;
