@@ -86,7 +86,7 @@
 <button onclick="addMediaLink()">Add Media Link</button>
 <label>Mark as Location Source</label>
 <table><tr>
-  <td style="width: 40px;"><input type="checkbox" id="isLocationSource" onchange="toggleLocationPicker()"></td>
+  <td style="width: 40px;"><input type="checkbox" id="isLocationSource"></td>
   <td><label for="isLocationSource">Mark as Location Source</label></td>
 </tr></table>
 <button onclick="updateThing()">Save Changes</button>
@@ -116,24 +116,6 @@ function addMediaLink(url = '') {
   document.getElementById('media-container').appendChild(div);
 }
 
-function toggleLocationPicker() {
-  const isSource = document.getElementById('isLocationSource').checked;
-  if (typeof window.loadLocationPicker === 'function') {
-    window.loadLocationPicker("location-section", userId, db);
-  }
-  if (isSource) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      selectedLocation = {
-        lat: pos.coords.latitude.toFixed(5),
-        long: pos.coords.longitude.toFixed(5),
-        source: 'device'
-      };
-    }, err => {
-      alert("Location access denied. Please allow access.");
-    });
-  }
-}
-
 function getSelectedLocation() {
   return (typeof window.getSelectedLocation === 'function') ? window.getSelectedLocation() : null;
 }
@@ -142,13 +124,20 @@ function updateThing() {
   const name = document.getElementById('thing-name').value.trim();
   const visibility = document.getElementById('thing-visibility').value;
   const isLocationSource = document.getElementById('isLocationSource').checked;
+
   const flexibutes = [...document.querySelectorAll('#flexibutes-container > div')].map(div => {
     const [k, v] = div.querySelectorAll('input,textarea');
     return { key: k.value.trim(), val: v.value.trim() };
   }).filter(kv => kv.key && kv.val);
+
   const media = [...document.querySelectorAll('#media-container input')].map(input => input.value.trim()).filter(Boolean);
 
-  const location = isLocationSource ? selectedLocation : getSelectedLocation();
+  let location = null;
+  if (isLocationSource) {
+    location = selectedLocation;
+  } else {
+    location = getSelectedLocation();
+  }
 
   db.collection("things").doc(thingId).update({
     name, visibility, flexibutes, media, isLocationSource, location
@@ -163,9 +152,6 @@ function updateThing() {
 
 auth.signInAnonymously().then(res => {
   userId = res.user.uid;
-  if (typeof window.loadLocationPicker === 'function') {
-    window.loadLocationPicker("location-section", userId, db);
-  }
   db.collection("things").doc(thingId).get().then(doc => {
     if (!doc.exists) return alert("Thing not found");
     const data = doc.data();
@@ -175,6 +161,30 @@ auth.signInAnonymously().then(res => {
     (data.flexibutes || []).forEach(({key, val}) => addFlexibute(key, val));
     (data.media || []).forEach(m => addMediaLink(m));
     selectedLocation = data.location || null;
+
+    if (typeof window.loadLocationPicker === 'function') {
+      window.loadLocationPicker("location-section", userId, db);
+    }
+  });
+
+  // Load the dropdown immediately on load
+  if (typeof window.loadLocationPicker === 'function') {
+    window.loadLocationPicker("location-section", userId, db);
+  }
+
+  // Geolocate only if checkbox is clicked
+  document.getElementById('isLocationSource').addEventListener('change', () => {
+    if (document.getElementById('isLocationSource').checked) {
+      navigator.geolocation.getCurrentPosition(pos => {
+        selectedLocation = {
+          lat: pos.coords.latitude.toFixed(5),
+          long: pos.coords.longitude.toFixed(5),
+          source: 'device'
+        };
+      }, err => {
+        alert("Location access denied. Please allow access.");
+      });
+    }
   });
 });
 </script>
