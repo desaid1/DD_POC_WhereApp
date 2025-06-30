@@ -158,8 +158,8 @@
         : Object.entries(thing.flexibutes || {}).map(([k, v]) => `<p><strong>${k}:</strong> ${v}</p>`).join('');
 
       div.innerHTML = `
-$1<span class="tag ${thing.visibility || 'private'}">${thing.visibility || 'private'}</span><br>
-$1<h3>${thing.name || 'Untitled Thing'}</h3>
+<span class="tag ${thing.visibility || 'private'}">${thing.visibility || 'private'}</span><br>
+<h3>${thing.name || 'Untitled Thing'}</h3>
         ${mediaImages}<br>
         ${details}
         <p><strong>Location:</strong> ${thing.location?.source || 'Unknown'} (${thing.location?.lat}, ${thing.location?.long})</p>
