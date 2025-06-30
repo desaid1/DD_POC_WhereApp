@@ -118,6 +118,9 @@ function addMediaLink(url = '') {
 
 function toggleLocationPicker() {
   const isSource = document.getElementById('isLocationSource').checked;
+  if (typeof window.loadLocationPicker === 'function') {
+    window.loadLocationPicker("location-section", userId, db);
+  }
   if (isSource) {
     navigator.geolocation.getCurrentPosition(pos => {
       selectedLocation = {
@@ -125,11 +128,6 @@ function toggleLocationPicker() {
         long: pos.coords.longitude.toFixed(5),
         source: 'device'
       };
-    }, err => {
-      alert("Location access denied. Please allow access.");
-    });
-  }
-};
     }, err => {
       alert("Location access denied. Please allow access.");
     });
@@ -178,8 +176,8 @@ auth.signInAnonymously().then(res => {
     selectedLocation = data.location || null;
 
     if (typeof window.loadLocationPicker === 'function') {
-  window.loadLocationPicker("location-section", userId, db);
-}
+      window.loadLocationPicker("location-section", userId, db);
+    }
   });
 });
 </script>
