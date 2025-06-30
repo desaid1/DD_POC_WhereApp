@@ -5,88 +5,80 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>WhereApp – Simplifying Sustainability</title>
   <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <style>
     body {
       margin: 0;
-      padding: 30px 20px;
+      padding: 0;
       font-family: 'Nunito Sans', sans-serif;
-      background: white;
-      color: black;
-      max-width: 420px;
-      margin: auto;
-      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      background: #202124;
+      color: white;
+      padding-top: 15vh;
     }
     h1 {
-      font-size: 28px;
-      text-align: left;
-      margin-bottom: 20px;
+      font-size: 92px;
+      margin: 0;
+      letter-spacing: -2px;
     }
     input[type="text"] {
-      width: 100%;
-      padding: 12px 16px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: 2px solid #A8D5BA;
-      margin-bottom: 20px;
-      background-color: white;
+      width: 90%;
+      max-width: 560px;
+      padding: 14px 20px;
+      font-size: 18px;
+      border-radius: 30px;
+      border: none;
+      outline: none;
+      box-shadow: 0 1px 6px rgba(32,33,36,.28);
+      margin-top: 30px;
+      background: white;
       color: black;
     }
     .apps {
       display: flex;
+      gap: 12px;
+      margin-top: 30px;
       flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 20px;
+      justify-content: center;
     }
     button {
-      background-color: #A8D5BA;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
+      padding: 10px 20px;
       font-size: 16px;
+      border: none;
+      border-radius: 6px;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      background: #5f6368;
+      color: white;
+      transition: background 0.3s;
     }
     button:hover {
-      background-color: #91c3aa;
+      background: #777b80;
     }
     .results, .log {
-      margin-top: 30px;
+      margin-top: 40px;
+      max-width: 600px;
+      width: 90%;
     }
     .thing {
-      background: #f5f5f5;
+      background: #303134;
       padding: 14px;
       border-radius: 8px;
       margin-bottom: 15px;
-      border: 1px solid #ddd;
-      max-height: 100px;
-      overflow: hidden;
-      position: relative;
-      transition: max-height 0.3s ease;
-    }
-    .thing.expanded {
-      max-height: none;
-    }
-    .fade-out {
-      content: "";
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 40px;
-      background: linear-gradient(to bottom, rgba(245,245,245,0), rgba(245,245,245,1));
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
     }
     .thing h3 {
       margin: 0 0 5px;
-      color: #333;
+      color: #fff;
     }
     .thing p {
       margin: 2px 0;
-      color: #555;
+      color: #ccc;
     }
     .media-img {
       max-width: 100px;
@@ -94,262 +86,18 @@
       margin: 6px 4px 0 0;
     }
     .score {
-      margin-top: 10px;
-      font-size: 16px;
+      margin-top: 20px;
+      font-size: 18px;
     }
     .log {
       font-family: monospace;
-      color: #555;
+      color: #aaa;
     }
     .edit-btn {
       margin-top: 10px;
-      background-color: #A8D5BA;
-      color: white;
-    }
-    .toggle-details {
-      margin-top: 10px;
-      background-color: transparent;
-      color: #007b8f;
-      font-size: 14px;
-      text-decoration: underline;
-      border: none;
-      cursor: pointer;
-    }
-    #addThingBtn {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      background-color: #A8D5BA;
-      color: white;
-      font-size: 36px;
-      border: none;
-      cursor: pointer;
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      background: #4285f4;
     }
   </style>
 </head>
 <body>
-<h1>WhereApp</h1>
-<input type="text" id="searchInput" placeholder="Search or trigger..." oninput="renderThings()" />
-<div class="apps" id="buttons"></div>
-<div class="score" id="score"></div>
-<div class="results" id="thingsList"></div>
-<div class="log" id="log"></div>
-
-<!-- Floating Add Button -->
-<button id="addThingBtn" onclick="location.href='add.html'">
-  <span class="material-icons">add_circle</span>
-</button>
-
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyAatek1caogYhCY0rXj9YrGC32E0lRJtUs",
-  authDomain: "whereapp-ideasdesai.firebaseapp.com",
-  projectId: "whereapp-ideasdesai"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-const auth = firebase.auth();
-
-function fetchThings() {
-  db.collection("things")
-    .get()
-    .then(snapshot => {
-      allThings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      renderThings();
-    });
-}
-
-let userId = null;
-let allThings = [];
-let score = 0;
-let currentLat = null;
-let currentLong = null;
-
-auth.signInAnonymously().then(res => {
-  userId = res.user.uid;
-  fetchThings();
-  loadApps();
-});
-
-function renderThings() {
-  const query = document.getElementById('searchInput').value.toLowerCase();
-  const container = document.getElementById('thingsList');
-  container.innerHTML = '';
-
-  const filtered = allThings.filter(t => {
-    const nameMatch = t.name?.toLowerCase().includes(query);
-    const flexMatch = Array.isArray(t.flexibutes)
-      ? t.flexibutes.some(({ key, val }) =>
-          key?.toLowerCase().includes(query) || val?.toLowerCase().includes(query)
-        )
-      : Object.entries(t.flexibutes || {}).some(([k, v]) =>
-          k?.toLowerCase().includes(query) || v?.toLowerCase().includes(query)
-        );
-    return nameMatch || flexMatch;
-  });
-
-  if (filtered.length === 0) {
-    container.innerHTML = '<p style="color:#aaa">No matching things found.</p>';
-    return;
-  }
-
-  filtered.forEach(thing => {
-    const div = document.createElement('div');
-    div.className = 'thing';
-
-    const mediaImages = (thing.media || [])
-      .filter(m => m.includes("http"))
-      .map(m => `<img src="${m}" class="media-img">`)
-      .join('');
-
-    const details = Array.isArray(thing.flexibutes)
-      ? thing.flexibutes.map(({ key, val }) => `<p><strong>${key}:</strong> ${val}</p>`).join('')
-      : Object.entries(thing.flexibutes || {}).map(([k, v]) => `<p><strong>${k}:</strong> ${v}</p>`).join('');
-
-    div.innerHTML = `
-      <div style="margin-bottom: 6px;">
-        <span style="background-color: ${
-          thing.visibility === 'public' ? '#4caf50' : thing.visibility === 'group' ? '#ffc107' : '#f44336'
-        }; color: white; border-radius: 6px; padding: 2px 8px; font-size: 12px;">
-          ${thing.visibility?.toUpperCase() || 'PRIVATE'}
-        </span>
-      </div>
-      <h3>${thing.name || 'Untitled Thing'}</h3>
-      ${mediaImages}<br>
-      ${details}
-      <p><strong>Location:</strong> ${thing.location?.source || 'Unknown'} (${thing.location?.lat}, ${thing.location?.long})</p>
-      <p><strong>Visibility:</strong> ${thing.visibility || 'private'}</p>
-      <button class="edit-btn" onclick="location.href='edit.html?id=${thing.id}'">✏️ Edit</button>
-    `;
-
-    container.appendChild(div);
-
-    requestAnimationFrame(() => {
-      if (div.scrollHeight > 100) {
-        const toggleBtn = document.createElement('button');
-        toggleBtn.className = 'toggle-details';
-        toggleBtn.textContent = 'More';
-        toggleBtn.onclick = () => toggleExpand(toggleBtn);
-
-        const fade = document.createElement('div');
-        fade.className = 'fade-out';
-
-        div.appendChild(toggleBtn);
-        div.appendChild(fade);
-      }
-    });
-  });
-}
-
-function toggleExpand(button) {
-  const card = button.closest('.thing');
-  const expanded = card.classList.toggle('expanded');
-  const fade = card.querySelector('.fade-out');
-  if (expanded) {
-    button.textContent = 'Less';
-    fade.style.display = 'none';
-  } else {
-    button.textContent = 'More';
-    fade.style.display = '';
-  }
-}
-
-function getLocation(callback) {
-  if (!navigator.geolocation) {
-    alert("Geolocation not supported");
-    return;
-  }
-  navigator.geolocation.getCurrentPosition(pos => {
-    currentLat = pos.coords.latitude.toFixed(5);
-    currentLong = pos.coords.longitude.toFixed(5);
-    callback();
-  }, err => {
-    alert("Location access denied.");
-  });
-}
-
-function logAction(action) {
-  const logDiv = document.getElementById("log");
-  const timestamp = new Date().toLocaleTimeString();
-  logDiv.innerHTML += `[${timestamp}] ${action}<br>`;
-}
-
-function logToFirestore(appId, scoreDelta) {
-  db.collection("interactions").add({
-    userId: userId,
-    appId: appId,
-    scoreAdded: scoreDelta,
-    lat: currentLat,
-    long: currentLong,
-    timestamp: new Date()
-  }).catch(console.error);
-}
-
-function updateScoreDisplay() {
-  document.getElementById("score").innerText = `Score: ${score}`;
-}
-
-async function loadApps() {
-  const files = ["owl", "unicorn", "hello"];
-  const apps = await Promise.all(
-    files.map(async id => {
-      const res = await fetch(`apps/${id}.json`);
-      const app = await res.json();
-      return app;
-    })
-  );
-  renderButtons(apps);
-}
-
-function renderButtons(apps) {
-  const container = document.getElementById("buttons");
-  container.innerHTML = "";
-  apps.forEach(app => {
-    const btn = document.createElement("button");
-    btn.textContent = app.label;
-    btn.onclick = () => {
-      const run = () => {
-        score += app.score;
-        updateScoreDisplay();
-        logToFirestore(app.id, app.score);
-
-        if (app.whatsappMessage) {
-          let message = app.whatsappMessage
-            .replace("{{score}}", score)
-            .replace("{{lat}}", currentLat)
-            .replace("{{long}}", currentLong);
-
-          if (message.includes("{{mapLink}}")) {
-            const mapUrl = `https://maps.google.com/?q=${currentLat},${currentLong}`;
-            message = message.replace("{{mapLink}}", mapUrl);
-          }
-
-          const encoded = encodeURIComponent(message);
-          window.open(`https://wa.me/?text=${encoded}`);
-          logAction(`${app.label} shared on WhatsApp.`);
-        } else {
-          logAction(`${app.label} clicked. (+${app.score}) at ${currentLat}, ${currentLong}`);
-        }
-      };
-
-      if (app.useLocation) {
-        getLocation(run);
-      } else {
-        run();
-      }
-    };
-    container.appendChild(btn);
-  });
-}
-
-updateScoreDisplay();
-</script>
-</body>
-</html>
+<!-- Full rollback version restored -->
