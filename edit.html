@@ -69,12 +69,27 @@
 </head>
 <body>
 <h2>Edit Thing</h2>
+<label>Name</label>
+<input id="thing-name" type="text">
+<label>Visibility</label>
+<select id="thing-visibility">
+  <option value="private">Private</option>
+  <option value="group">Group</option>
+  <option value="public">Public</option>
+</select>
+<label>Details</label>
+<div id="flexibutes-container"></div>
+<button onclick="addFlexibute()">Add Detail</button>
+<label>Media Links</label>
+<div id="media-container"></div>
+<button onclick="addMediaLink()">Add Media Link</button>
 <label>Mark as Location Source</label>
 <table><tr>
-  <td style="width: 40px;"><input type="checkbox" id="isLocationSource"></td>
+  <td style="width: 40px;"><input type="checkbox" id="isLocationSource" onchange="toggleLocationPicker()"></td>
   <td><label for="isLocationSource">Mark as Location Source</label></td>
 </tr></table>
 <div id="location-section" style="margin-bottom: 10px;"></div>
+<button onclick="updateThing()">Save Changes</button>
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyAatek1caogYhCY0rXj9YrGC32E0lRJtUs",
@@ -86,11 +101,86 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 let userId = null;
+let thingId = new URLSearchParams(window.location.search).get("id");
+let selectedLocation = null;
+
+function addFlexibute(key = '', val = '') {
+  const div = document.createElement('div');
+  div.innerHTML = `<input placeholder="Key" value="${key}"><textarea placeholder="Value">${val}</textarea>`;
+  document.getElementById('flexibutes-container').appendChild(div);
+}
+
+function addMediaLink(url = '') {
+  const div = document.createElement('div');
+  div.innerHTML = `<input placeholder="Image or File URL" value="${url}">`;
+  document.getElementById('media-container').appendChild(div);
+}
+
+function getSelectedLocation() {
+  return (typeof window.getSelectedLocation === 'function') ? window.getSelectedLocation() : null;
+}
+
+function toggleLocationPicker() {
+  const isSource = document.getElementById('isLocationSource').checked;
+  if (isSource) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      selectedLocation = {
+        lat: pos.coords.latitude.toFixed(5),
+        long: pos.coords.longitude.toFixed(5),
+        source: 'device'
+      };
+    }, err => {
+      alert("Location access denied.");
+    });
+  }
+}
+
+function updateThing() {
+  const name = document.getElementById('thing-name').value.trim();
+  const visibility = document.getElementById('thing-visibility').value;
+  const isLocationSource = document.getElementById('isLocationSource').checked;
+
+  const flexibutes = [...document.querySelectorAll('#flexibutes-container > div')].map(div => {
+    const [k, v] = div.querySelectorAll('input,textarea');
+    return { key: k.value.trim(), val: v.value.trim() };
+  }).filter(kv => kv.key && kv.val);
+
+  const media = [...document.querySelectorAll('#media-container input')].map(input => input.value.trim()).filter(Boolean);
+
+  let location = getSelectedLocation();
+  if (isLocationSource && selectedLocation) {
+    location = selectedLocation;
+  }
+
+  db.collection("things").doc(thingId).update({
+    name, visibility, flexibutes, media, isLocationSource, location
+  }).then(() => {
+    alert("✅ Thing updated successfully!");
+    window.location.href = "index.html";
+  }).catch(e => {
+    console.error("Error updating:", e);
+    alert("❌ Failed to update thing.");
+  });
+}
+
 auth.signInAnonymously().then(res => {
   userId = res.user.uid;
-  if (typeof window.loadLocationPicker === 'function') {
-    window.loadLocationPicker("location-section", userId, db);
-  }
+  db.collection("things").doc(thingId).get().then(doc => {
+    if (!doc.exists) return alert("Thing not found");
+    const data = doc.data();
+
+    document.getElementById('thing-name').value = data.name || '';
+    document.getElementById('thing-visibility').value = data.visibility || 'private';
+    document.getElementById('isLocationSource').checked = !!data.isLocationSource;
+    (data.flexibutes || []).forEach(({key, val}) => addFlexibute(key, val));
+    (data.media || []).forEach(url => addMediaLink(url));
+    selectedLocation = data.location || null;
+
+    // Load the locationPicker dropdown
+    if (typeof window.loadLocationPickerIfReady === 'function') {
+      window.loadLocationPickerIfReady("location-section", userId, db);
+    }
+  });
 });
 </script>
 </body>
