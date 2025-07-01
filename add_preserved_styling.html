@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Thing</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="apps/locationPickerWrapper.js" defer></script>
+  <style>
+    body {
+      font-family: 'Nunito Sans', sans-serif;
+      background: white;
+      color: black;
+      padding: 30px 20px;
+      max-width: 420px;
+      margin: auto;
+    }
+    h2 {
+      text-align: left;
+      font-size: 24px;
+    }
+    input, textarea, select {
+      background-color: white;
+      color: black;
+      border: 2px solid #A8D5BA;
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 16px;
+      margin-bottom: 12px;
+      width: 100%;
+    }
+    button {
+      background-color: #A8D5BA;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+      cursor: pointer;
+      margin-bottom: 12px;
+    }
+    button:hover {
+      background-color: #91c3aa;
+    }
+    label {
+      font-weight: bold;
+      margin-top: 10px;
+      display: block;
+    }
+    #details-container div,
+    #media-container div {
+      margin-bottom: 12px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 12px;
+    }
+    td {
+      padding: 4px;
+      vertical-align: middle;
+      border: 1px dashed gray;
+    }
+    .search-result {
+      background: #f5f5f5;
+      border: 1px solid #ccc;
+      padding: 8px;
+      margin-bottom: 8px;
+      border-radius: 6px;
+    }
+  </style>
+</head>
+<body>
+<h2>Add Thing</h2>
+<input id="search-box" placeholder="Search existing things..." oninput="searchThings()">
+<div id="search-results"></div>
+<label>Name</label>
+<input id="thing-name" type="text">
+<label>Visibility</label>
+<select id="thing-visibility">
+  <option value="private">Private</option>
+  <option value="group">Group</option>
+  <option value="public">Public</option>
+</select>
+<label>Details</label>
+<div id="details-container">
+  <div><input placeholder="Key" type="text"><textarea placeholder="Value"></textarea></div>
+</div>
+<button onclick="addDetail()">Add Detail</button>
+<label>Media Links</label>
+<div id="media-container">
+  <input placeholder="Add link to image or file" type="url">
+</div>
+<button onclick="addMediaLink()">Add Media Link</button>
+<label>Mark as Location Source</label>
+<table><tr>
+  <td style="width: 40px;"><input type="checkbox" id="isLocationSource" onchange="toggleDropdownState()"></td>
+  <td><label for="isLocationSource">Mark as Location Source</label></td>
+</tr></table>
+<label>Allow Copy</label>
+<table><tr>
+  <td style="width: 40px;"><input type="checkbox" id="allowCopy"></td>
+  <td><label for="allowCopy">Allow others to copy this Thing</label></td>
+</tr></table>
+<div id="location-section" style="margin-bottom: 10px;"></div>
+<button onclick="submitThing()">Add Thing</button>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAatek1caogYhCY0rXj9YrGC32E0lRJtUs",
+  authDomain: "whereapp-ideasdesai.firebaseapp.com",
+  projectId: "whereapp-ideasdesai"
+};
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let userId = null;
+let selectedLocation = null;
+
+auth.signInAnonymously().then(res => {
+  userId = res.user.uid;
+  if (typeof window.loadLocationPickerIfReady === 'function') {
+    window.loadLocationPickerIfReady("location-section", userId, db);
+  }
+});
+
+function addDetail() {
+  const container = document.getElementById('details-container');
+  const div = document.createElement('div');
+  div.innerHTML = `<input placeholder="Key" type="text"><textarea placeholder="Value"></textarea>`;
+  container.appendChild(div);
+}
+
+function addMediaLink() {
+  const container = document.getElementById('media-container');
+  const div = document.createElement('div');
+  div.innerHTML = `<input placeholder="Add link to image or file" type="url">`;
+  container.appendChild(div);
+}
+
+function toggleDropdownState() {
+  const dropdown = document.getElementById("locationSourceSelect");
+  const isSource = document.getElementById("isLocationSource").checked;
+  if (dropdown) dropdown.disabled = isSource;
+}
+
+function getSelectedLocation() {
+  return (typeof window.getSelectedLocation === 'function') ? window.getSelectedLocation() : null;
+}
+
+function submitThing() {
+  const name = document.getElementById('thing-name').value.trim();
+  const visibility = document.getElementById('thing-visibility').value;
+  const isLocationSource = document.getElementById('isLocationSource').checked;
+  const isCopyAllowed = document.getElementById('allowCopy').checked;
+
+  if (!name) return alert("Please enter a name.");
+  if (!userId) return alert("User not signed in yet.");
+
+  const details = [...document.querySelectorAll('#details-container > div')].map(div => {
+    const [k, v] = div.querySelectorAll('input,textarea');
+    return { key: k.value.trim(), val: v.value.trim() };
+  }).filter(kv => kv.key && kv.val);
+
+  const media = [...document.querySelectorAll('#media-container input')].map(input => input.value.trim()).filter(Boolean);
+
+  const location = isLocationSource
+    ? { lat: 0, long: 0, source: 'device' } // fallback placeholder if geolocation fails
+    : getSelectedLocation();
+
+  if (isLocationSource) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      storeThing({
+        lat: pos.coords.latitude.toFixed(5),
+        long: pos.coords.longitude.toFixed(5),
+        source: 'device'
+      });
+    }, () => alert("Location access denied."));
+  } else {
+    storeThing(location);
+  }
+
+  function storeThing(location) {
+    const thing = {
+      name,
+      visibility,
+      isLocationSource,
+      location,
+      flexibutes: details,
+      media,
+      userId,
+      copy: isCopyAllowed,
+      createdAt: new Date().toISOString()
+    };
+
+    db.collection("things").add(thing).then(() => {
+      alert("✅ Thing added successfully!");
+      window.location.href = "index.html";
+    }).catch(err => {
+      console.error("Error adding thing:", err);
+      alert("❌ Failed to add thing.");
+    });
+  }
+}
+
+function searchThings() {
+  const query = document.getElementById("search-box").value.trim().toLowerCase();
+  const resultsContainer = document.getElementById("search-results");
+  if (!query) return (resultsContainer.innerHTML = "");
+
+  db.collection("things")
+    .where("userId", "==", userId)
+    .get()
+    .then(snapshot => {
+      const filtered = snapshot.docs.filter(doc => doc.data().name?.toLowerCase().includes(query));
+      resultsContainer.innerHTML = filtered.length
+        ? filtered.map(doc => `<div class='search-result'><strong>${doc.data().name}</strong><br><button onclick=\"window.location.href='edit.html?id=${doc.id}'\">Edit</button></div>`).join('')
+        : '<p>No match found.</p>';
+    });
+}
+</script>
+</body>
+</html>
+
+<!-- Firebase logic replaced with secure fetch call -->
+<script>
+      fetch("https://us-central1-whereapp-ideasdesai.cloudfunctions.net/submitThing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data)
+      })
+      .then(res => res.json())
+      .then(response => {
+        alert("Thing saved! ID: " + response.id);
+      })
+      .catch(err => {
+        alert("Error saving thing: " + err.message);
+      });
+</script>
