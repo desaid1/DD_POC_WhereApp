@@ -11,7 +11,7 @@ const db = firebase.firestore();
 let userId = null;
 auth.signInAnonymously().then(res => {
   userId = res.user.uid;
-  initPage();
+  window.addEventListener('DOMContentLoaded', initPage);
 });
 
 function initPage() {
@@ -272,4 +272,3 @@ function submitThing() {
     });
   }
 }
-initPage();
