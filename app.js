@@ -140,3 +140,11 @@ function updateScoreDisplay() {
   const el = document.getElementById("score");
   if (el) el.innerText = `Score: ${score}`;
 }
+
+// ---- SUPPORT ----
+function getSelectedLocation() {
+  const select = document.getElementById("locationSourceSelect");
+  if (!select || !select.value) return null;
+  const selected = allThings.find(t => t.id === select.value);
+  return selected?.location || null;
+}
