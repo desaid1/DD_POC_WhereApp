@@ -252,15 +252,51 @@ function initSearch() {
   document.getElementById("searchInput")?.addEventListener("input", renderThings);
 }
 
-// ---- MISSING FUNCTION ADDED ----
+function saveChanges(id) {
+  const name = document.getElementById("thing-name").value.trim();
+  const visibility = document.getElementById("thing-visibility").value;
+  const isLocationSource = document.getElementById("isLocationSource").checked;
+  const isCopyAllowed = document.getElementById("allowCopy").checked;
+
+  const details = [...document.querySelectorAll("#details-container > div")].map(div => {
+    const [k, v] = div.querySelectorAll("input,textarea");
+    return { key: k.value.trim(), val: v.value.trim() };
+  }).filter(kv => kv.key && kv.val);
+
+  const media = [...document.querySelectorAll("#media-container input")].map(input => input.value.trim()).filter(Boolean);
+
+  const location = isLocationSource
+    ? { lat: 0, long: 0, source: 'device' }
+    : getSelectedLocation();
+
+  const updatedThing = {
+    name,
+    visibility,
+    isLocationSource,
+    flexibutes: details,
+    media,
+    userId,
+    copy: isCopyAllowed,
+    location,
+    updatedAt: new Date().toISOString()
+  };
+
+  db.collection("things").doc(id).set(updatedThing).then(() => {
+    alert("✅ Thing updated successfully!");
+    window.location.href = "index.html";
+  }).catch(err => {
+    console.error("Error updating thing:", err);
+    alert("❌ Failed to update thing.");
+  });
+}
+
 function deleteThing(id) {
-  if (!confirm("Are you sure you want to delete this thing?")) return;
-  db.collection("things").doc(id).delete()
-    .then(() => {
-      alert("Thing deleted successfully.");
-      window.location.href = "index.html";
-    })
-    .catch(error => {
-      alert("Error deleting thing: " + error.message);
-    });
+  if (!confirm("Are you sure you want to delete this Thing?")) return;
+  db.collection("things").doc(id).delete().then(() => {
+    alert("🗑️ Thing deleted successfully!");
+    window.location.href = "index.html";
+  }).catch(err => {
+    console.error("Error deleting thing:", err);
+    alert("❌ Failed to delete thing.");
+  });
 }
