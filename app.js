@@ -18,7 +18,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 function initPage() {
   const path = window.location.pathname;
-  if (path.includes("index")) {
+  if (path === "/" || path.endsWith("index.html") || path.endsWith("/kohthai/")) {
     initIndex();
   } else if (path.includes("add")) {
     initAdd();
