@@ -34,6 +34,7 @@ function initPage() {
 function initIndex() {
   fetchThings();
   loadApps();
+  document.getElementById('searchInput')?.addEventListener('input', renderThings);
 }
 
 let allThings = [];
