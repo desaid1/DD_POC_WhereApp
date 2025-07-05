@@ -50,7 +50,8 @@ function renderThings() {
   if (!container) return;
   container.innerHTML = '';
 
-  const filtered = allThings;
+  const filtered = allThings.filter(t => {
+    const nameMatch = t.name?.toLowerCase().includes(query);
     const flexMatch = (Array.isArray(t.flexibutes)
       ? t.flexibutes
       : Object.entries(t.flexibutes || {}).map(([key, val]) => ({ key, val }))
