@@ -9,9 +9,11 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 
 let userId = null;
-auth.signInAnonymously().then(res => {
-  userId = res.user.uid;
-  window.addEventListener('DOMContentLoaded', initPage);
+window.addEventListener('DOMContentLoaded', () => {
+  auth.signInAnonymously().then(res => {
+    userId = res.user.uid;
+    initPage();
+  });
 });
 
 function initPage() {
