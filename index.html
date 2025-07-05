@@ -1,4 +1,3 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -14,14 +13,14 @@
 <body>
 <h1>WhereApp</h1>
 <input type="text" id="searchInput" placeholder="Search or trigger..." oninput="renderThings()" />
-<div class="apps" id="buttons"></div>
+<div class="apps" id="buttons">
+  <button id="addThingBtn" onclick="location.href='add.html'">
+    <span class="material-icons">add_circle</span> Add
+  </button>
+</div>
 <div class="score" id="score"></div>
 <div class="results" id="thingsList"></div>
 <div class="log" id="log"></div>
-<!-- Floating Add Button -->
-<button id="addThingBtn" onclick="location.href='add.html'">
-  <span class="material-icons">add_circle</span>
-</button>
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyAatek1caogYhCY0rXj9YrGC32E0lRJtUs",
