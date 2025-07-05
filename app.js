@@ -149,6 +149,23 @@ function getSelectedLocation() {
   return selected?.location || null;
 }
 
+
+function searchThings() {
+  const query = document.getElementById("search-box").value.trim().toLowerCase();
+  const resultsContainer = document.getElementById("search-results");
+  if (!query) return (resultsContainer.innerHTML = "");
+
+  db.collection("things")
+    .where("userId", "==", userId)
+    .get()
+    .then(snapshot => {
+      const filtered = snapshot.docs.filter(doc => doc.data().name?.toLowerCase().includes(query));
+      resultsContainer.innerHTML = filtered.length
+        ? filtered.map(doc => `<div class='search-result'><strong>${doc.data().name}</strong><br><button onclick="location.href='edit.html?id=${doc.id}'">Edit</button></div>`).join('')
+        : '<p>No match found.</p>';
+    });
+}
+
 function initAdd() {
   document.getElementById("search-box")?.addEventListener("input", searchThings);
   document.getElementById("isLocationSource")?.addEventListener("change", toggleDropdownState);
