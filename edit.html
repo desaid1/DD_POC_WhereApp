@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Edit Thing</title>
+  <title>Edit</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
@@ -13,7 +13,7 @@
   <script src="app.js" defer></script>
 </head>
 <body>
-  <h2>Edit Thing</h2>
+  <h2>Edit</h2>
   <label>Name</label>
   <input id="thing-name" type="text">
 
@@ -32,19 +32,19 @@
   <div id="media-container"></div>
   <button onclick="addMediaLink()">Add Media Link</button>
 
-  <label>Mark as Location Source</label>
+  <label>Location Source?</label>
   <table>
     <tr>
       <td style="width: 40px;"><input type="checkbox" id="isLocationSource" onchange="toggleDropdownState()"></td>
-      <td><label for="isLocationSource">Mark as Location Source</label></td>
+      <td><label for="isLocationSource">Location Source?</label></td>
     </tr>
   </table>
 
-  <label>Allow Copy</label>
+  <label>Allow Copy?</label>
   <table>
     <tr>
       <td style="width: 40px;"><input type="checkbox" id="allowCopy"></td>
-      <td><label for="allowCopy">Allow others to copy this Thing</label></td>
+      <td><label for="allowCopy">Allow Copy</label></td>
     </tr>
   </table>
 
