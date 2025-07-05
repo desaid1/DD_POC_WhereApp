@@ -12,54 +12,53 @@
   <script src="apps/locationPickerWrapper.js" defer></script>
 </head>
 <body>
-  <h2>Add</h2>
+<h2>Add</h2>
+<input id="search-box" placeholder="Search existing things..." oninput="searchThings()">
+<div id="search-results"></div>
 
-  <input id="search-box" placeholder="Search existing things..." oninput="searchThings()">
-  <div id="search-results"></div>
+<label>Name</label>
+<input id="thing-name" type="text">
 
-  <label>Name</label>
-  <input id="thing-name" type="text">
+<label>Visibility</label>
+<select id="thing-visibility">
+  <option value="private">Private</option>
+  <option value="group">Group</option>
+  <option value="public">Public</option>
+</select>
 
-  <label>Visibility</label>
-  <select id="thing-visibility">
-    <option value="private">Private</option>
-    <option value="group">Group</option>
-    <option value="public">Public</option>
-  </select>
+<label>Details</label>
+<div id="details-container">
+  <div><input placeholder="Key" type="text"><textarea placeholder="Value"></textarea></div>
+</div>
+<button onclick="addDetail()">Add Detail</button>
 
-  <label>Details</label>
-  <div id="details-container">
-    <div><input placeholder="Key" type="text"><textarea placeholder="Value"></textarea></div>
-  </div>
-  <button onclick="addDetail()">Add Detail</button>
+<label>Media Links</label>
+<div id="media-container">
+  <input placeholder="Add link to image or file" type="url">
+</div>
+<button onclick="addMediaLink()">Add Media Link</button>
 
-  <label>Media Links</label>
-  <div id="media-container">
-    <input placeholder="Add link to image or file" type="url">
-  </div>
-  <button onclick="addMediaLink()">Add Media Link</button>
+<label>Location Source?</label>
+<table><tr>
+  <td style="width: 40px;"><input type="checkbox" id="isLocationSource" onchange="toggleDropdownState()"></td>
+  <td><label for="isLocationSource">Location Source?</label></td>
+</tr></table>
 
-  <label>Location Source?</label>
-  <table><tr>
-    <td style="width: 40px;"><input type="checkbox" id="isLocationSource" onchange="toggleDropdownState()"></td>
-    <td><label for="isLocationSource">Location Source?</label></td>
-  </tr></table>
+<!-- 🔽 Dropdown to select from saved location sources -->
+<select id="locationSourceSelect">
+  <option value="">Select from saved location sources...</option>
+</select>
 
-  <!-- ✅ Location source dropdown -->
-  <select id="locationSourceSelect" disabled>
-    <option value="">Select from saved location sources...</option>
-  </select>
+<label>Allow Copy</label>
+<table><tr>
+  <td style="width: 40px;"><input type="checkbox" id="allowCopy"></td>
+  <td><label for="allowCopy">Allow Copy?</label></td>
+</tr></table>
 
-  <div id="location-section" style="margin-bottom: 10px;"></div>
+<div id="location-section" style="margin-bottom: 10px;"></div>
 
-  <label>Allow Copy</label>
-  <table><tr>
-    <td style="width: 40px;"><input type="checkbox" id="allowCopy"></td>
-    <td><label for="allowCopy">Allow Copy?</label></td>
-  </tr></table>
+<button onclick="submitThing()">Add</button>
 
-  <button onclick="submitThing()">Add</button>
-
-  <script src="app.js" defer></script>
+<script src="app.js" defer></script>
 </body>
 </html>
