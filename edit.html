@@ -10,36 +10,47 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="apps/locationPickerWrapper.js" defer></script>
+  <script src="app.js" defer></script>
 </head>
 <body>
-<h2 id="form-title">Edit Thing</h2>
-<label>Name</label>
-<input id="thing-name" type="text">
-<label>Visibility</label>
-<select id="thing-visibility">
-  <option value="private">Private</option>
-  <option value="group">Group</option>
-  <option value="public">Public</option>
-</select>
-<label>Details</label>
-<div id="flexibutes-container"></div>
-<button onclick="addFlexibute()">Add Detail</button>
-<label>Media Links</label>
-<div id="media-container"></div>
-<button onclick="addMediaLink()">Add Media Link</button>
-<label>Mark as Location Source</label>
-<table><tr>
-  <td style="width: 40px;"><input type="checkbox" id="isLocationSource"></td>
-  <td><label for="isLocationSource">Mark as Location Source</label></td>
-</tr></table>
-<label>Allow Copy</label>
-<table><tr>
-  <td style="width: 40px;"><input type="checkbox" id="allowCopy"></td>
-  <td><label for="allowCopy">Allow others to copy this Thing</label></td>
-</tr></table>
-<div id="location-section" style="margin-bottom: 10px;"></div>
-<button id="save-btn">Save Changes</button>
-<button id="delete-btn" class="danger">Delete Thing</button>
-<script src="app.js" defer></script>
+  <h2>Edit Thing</h2>
+  <label>Name</label>
+  <input id="thing-name" type="text">
+
+  <label>Visibility</label>
+  <select id="thing-visibility">
+    <option value="private">Private</option>
+    <option value="group">Group</option>
+    <option value="public">Public</option>
+  </select>
+
+  <label>Details</label>
+  <div id="details-container"></div>
+  <button onclick="addDetail()">Add Detail</button>
+
+  <label>Media Links</label>
+  <div id="media-container"></div>
+  <button onclick="addMediaLink()">Add Media Link</button>
+
+  <label>Mark as Location Source</label>
+  <table>
+    <tr>
+      <td style="width: 40px;"><input type="checkbox" id="isLocationSource" onchange="toggleDropdownState()"></td>
+      <td><label for="isLocationSource">Mark as Location Source</label></td>
+    </tr>
+  </table>
+
+  <label>Allow Copy</label>
+  <table>
+    <tr>
+      <td style="width: 40px;"><input type="checkbox" id="allowCopy"></td>
+      <td><label for="allowCopy">Allow others to copy this Thing</label></td>
+    </tr>
+  </table>
+
+  <div id="location-section" style="margin-bottom: 10px;"></div>
+
+  <button id="saveBtn">💾 Save Changes</button>
+  <button id="deleteBtn" class="delete">🗑️ Delete Thing</button>
 </body>
 </html>
