@@ -17,9 +17,8 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 function initPage() {
-  const path = window.location.pathname;
-  const page = path.split("/").pop();
-  if (page === "" || page === "index.html" || path.endsWith("/kohthai/")) {
+  const page = window.location.pathname.split("/").pop();
+  if (page === "" || page === "index.html" || window.location.pathname.endsWith("/kohthai/")) {
     initIndex();
   } else if (page === "add.html") {
     initAdd();
@@ -30,16 +29,16 @@ function initPage() {
   }
 }
 
-// ---- INDEX PAGE FUNCTIONS ----
-function initIndex() {
-  fetchThings();
-  loadApps();
-}
-
+// ---- INDEX ----
 let allThings = [];
 let score = 0;
 let currentLat = null;
 let currentLong = null;
+
+function initIndex() {
+  fetchThings();
+  loadApps();
+}
 
 async function fetchThings() {
   const snapshot = await db.collection("things").get();
@@ -98,19 +97,16 @@ function renderThings() {
       toggle.textContent = div.classList.contains('expanded') ? 'Less' : 'More';
     };
     div.appendChild(toggle);
-
     container.appendChild(div);
   });
 }
 
 function loadApps() {
   const files = ["owl", "unicorn", "hello"];
-  Promise.all(
-    files.map(async id => {
-      const res = await fetch(`apps/${id}.json`);
-      return await res.json();
-    })
-  ).then(renderButtons);
+  Promise.all(files.map(async id => {
+    const res = await fetch(`apps/${id}.json`);
+    return await res.json();
+  })).then(renderButtons);
 }
 
 function renderButtons(apps) {
@@ -191,7 +187,7 @@ function logToFirestore(appId, scoreDelta) {
   }).catch(console.error);
 }
 
-// ---- SEARCH PAGE FUNCTIONS ----
+// ---- SEARCH ----
 function initSearch() {
   const input = document.getElementById("searchInput");
   const container = document.getElementById("results");
@@ -200,15 +196,18 @@ function initSearch() {
   let allUserThings = [];
 
   async function loadAndRenderAll() {
-    const snapshot = await db.collection("things").where("userId", "==", userId).get();
-    allUserThings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    renderSearchResults();
+    try {
+      const snapshot = await db.collection("things").where("userId", "==", userId).get();
+      allUserThings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      renderSearchResults();
+    } catch (e) {
+      container.innerHTML = "<p>⚠️ Error loading data</p>";
+    }
   }
 
   function renderSearchResults() {
     const query = input.value.trim().toLowerCase();
     const matches = allUserThings.filter(t => t.name?.toLowerCase().includes(query));
-
     container.innerHTML = matches.length
       ? matches.map(t => `<div class='search-result'>${t.name}</div>`).join('')
       : "<p>No results found.</p>";
@@ -216,4 +215,144 @@ function initSearch() {
 
   input.addEventListener("input", renderSearchResults);
   loadAndRenderAll();
+}
+
+// ---- ADD PAGE ----
+function initAdd() {
+  if (typeof window.loadLocationPickerIfReady === 'function') {
+    window.loadLocationPickerIfReady("location-section", userId, db);
+  }
+
+  document.getElementById("add-detail-btn")?.addEventListener("click", addDetail);
+  document.getElementById("add-media-btn")?.addEventListener("click", addMediaLink);
+  document.getElementById("isLocationSource")?.addEventListener("change", toggleDropdownState);
+  document.getElementById("submit-btn")?.addEventListener("click", submitThing);
+}
+
+function addDetail() {
+  const container = document.getElementById('details-container');
+  const div = document.createElement('div');
+  div.innerHTML = `<input placeholder="Key" type="text"><textarea placeholder="Value"></textarea>`;
+  container.appendChild(div);
+}
+
+function addMediaLink() {
+  const container = document.getElementById('media-container');
+  const div = document.createElement('div');
+  div.innerHTML = `<input placeholder="Add link to image or file" type="url">`;
+  container.appendChild(div);
+}
+
+function toggleDropdownState() {
+  const dropdown = document.getElementById("locationSourceSelect");
+  const isSource = document.getElementById("isLocationSource").checked;
+  if (dropdown) dropdown.disabled = isSource;
+}
+
+function getSelectedLocation() {
+  return (typeof window.getSelectedLocation === 'function') ? window.getSelectedLocation() : null;
+}
+
+function submitThing() {
+  const name = document.getElementById('thing-name').value.trim();
+  const visibility = document.getElementById('thing-visibility').value;
+  const isLocationSource = document.getElementById('isLocationSource').checked;
+  const isCopyAllowed = document.getElementById('allowCopy').checked;
+
+  if (!name) return alert("Please enter a name.");
+  if (!userId) return alert("User not signed in yet.");
+
+  const details = [...document.querySelectorAll('#details-container > div')].map(div => {
+    const [k, v] = div.querySelectorAll('input,textarea');
+    return { key: k.value.trim(), val: v.value.trim() };
+  }).filter(kv => kv.key && kv.val);
+
+  const media = [...document.querySelectorAll('#media-container input')].map(input => input.value.trim()).filter(Boolean);
+
+  const location = isLocationSource
+    ? { lat: 0, long: 0, source: 'device' }
+    : getSelectedLocation();
+
+  if (isLocationSource) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      storeThing({
+        lat: pos.coords.latitude.toFixed(5),
+        long: pos.coords.longitude.toFixed(5),
+        source: 'device'
+      });
+    }, () => alert("Location access denied."));
+  } else {
+    storeThing(location);
+  }
+
+  function storeThing(location) {
+    const thing = {
+      name,
+      visibility,
+      isLocationSource,
+      location,
+      flexibutes: details,
+      media,
+      userId,
+      copy: isCopyAllowed,
+      createdAt: new Date().toISOString()
+    };
+
+    db.collection("things").add(thing).then(() => {
+      alert("✅ Thing added successfully!");
+      window.location.href = "index.html";
+    }).catch(err => {
+      console.error("Error adding thing:", err);
+      alert("❌ Failed to add thing.");
+    });
+  }
+}
+
+// ---- EDIT PAGE ----
+function initEdit() {
+  const id = new URLSearchParams(window.location.search).get("id");
+  if (!id) return alert("No ID provided");
+
+  const nameEl = document.getElementById("edit-name");
+  const visibilityEl = document.getElementById("edit-visibility");
+  const detailsEl = document.getElementById("edit-details");
+  const saveBtn = document.getElementById("save-btn");
+
+  db.collection("things").doc(id).get().then(doc => {
+    if (!doc.exists) return alert("Thing not found");
+    const data = doc.data();
+    nameEl.value = data.name || "";
+    visibilityEl.value = data.visibility || "private";
+
+    const pairs = Array.isArray(data.flexibutes)
+      ? data.flexibutes
+      : Object.entries(data.flexibutes || {}).map(([k, v]) => ({ key: k, val: v }));
+
+    detailsEl.innerHTML = '';
+    pairs.forEach(p => {
+      const div = document.createElement("div");
+      div.innerHTML = `<input placeholder="Key" value="${p.key}"><textarea placeholder="Value">${p.val}</textarea>`;
+      detailsEl.appendChild(div);
+    });
+  });
+
+  saveBtn.addEventListener("click", () => {
+    const name = nameEl.value.trim();
+    const visibility = visibilityEl.value;
+
+    const flexibutes = [...detailsEl.querySelectorAll("div")].map(div => {
+      const [keyInput, valInput] = div.querySelectorAll("input,textarea");
+      return { key: keyInput.value.trim(), val: valInput.value.trim() };
+    }).filter(p => p.key && p.val);
+
+    db.collection("things").doc(id).update({
+      name,
+      visibility,
+      flexibutes,
+      updatedAt: new Date().toISOString()
+    }).then(() => {
+      alert("✅ Thing updated!");
+      location.href = "index.html";
+    });
+  });
 }
