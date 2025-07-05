@@ -251,3 +251,16 @@ function initSearch() {
   fetchThings();
   document.getElementById("searchInput")?.addEventListener("input", renderThings);
 }
+
+// ---- MISSING FUNCTION ADDED ----
+function deleteThing(id) {
+  if (!confirm("Are you sure you want to delete this thing?")) return;
+  db.collection("things").doc(id).delete()
+    .then(() => {
+      alert("Thing deleted successfully.");
+      window.location.href = "index.html";
+    })
+    .catch(error => {
+      alert("Error deleting thing: " + error.message);
+    });
+}
