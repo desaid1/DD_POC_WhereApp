@@ -197,17 +197,23 @@ function initSearch() {
   const container = document.getElementById("results");
   if (!input || !container) return;
 
-  input.addEventListener("input", async () => {
+  let allUserThings = [];
+
+  async function loadAndRenderAll() {
+    const snapshot = await db.collection("things").where("userId", "==", userId).get();
+    allUserThings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    renderSearchResults();
+  }
+
+  function renderSearchResults() {
     const query = input.value.trim().toLowerCase();
-    if (!query) {
-      container.innerHTML = "";
-      return;
-    }
-    const snapshot = await db.collection("things").get();
-    const matches = snapshot.docs.filter(doc => doc.data().name?.toLowerCase().includes(query));
+    const matches = allUserThings.filter(t => t.name?.toLowerCase().includes(query));
 
     container.innerHTML = matches.length
-      ? matches.map(doc => `<div class='search-result'>${doc.data().name}</div>`).join('')
+      ? matches.map(t => `<div class='search-result'>${t.name}</div>`).join('')
       : "<p>No results found.</p>";
-  });
+  }
+
+  input.addEventListener("input", renderSearchResults);
+  loadAndRenderAll();
 }
