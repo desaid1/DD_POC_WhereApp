@@ -148,3 +148,28 @@ function getSelectedLocation() {
   const selected = allThings.find(t => t.id === select.value);
   return selected?.location || null;
 }
+
+function initAdd() {
+  document.getElementById("search-box")?.addEventListener("input", searchThings);
+  document.getElementById("isLocationSource")?.addEventListener("change", toggleDropdownState);
+  window.loadLocationPickerIfReady?.("location-section", userId, db);
+  populateLocationSourceDropdown();
+}
+
+function populateLocationSourceDropdown() {
+  const select = document.getElementById("locationSourceSelect");
+  if (!select) return;
+
+  db.collection("things")
+    .where("userId", "==", userId)
+    .where("isLocationSource", "==", true)
+    .get()
+    .then(snapshot => {
+      snapshot.forEach(doc => {
+        const option = document.createElement("option");
+        option.value = doc.id;
+        option.textContent = doc.data().name || "Unnamed Thing";
+        select.appendChild(option);
+      });
+    });
+}
