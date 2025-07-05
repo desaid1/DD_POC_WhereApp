@@ -18,12 +18,15 @@ window.addEventListener('DOMContentLoaded', () => {
 
 function initPage() {
   const path = window.location.pathname;
-  if (path === "/" || path.endsWith("index.html") || path.endsWith("/kohthai/")) {
+  const page = path.split("/").pop();
+  if (page === "" || page === "index.html" || path.endsWith("/kohthai/")) {
     initIndex();
-  } else if (path.includes("add")) {
+  } else if (page === "add.html") {
     initAdd();
-  } else if (path.includes("edit")) {
+  } else if (page === "edit.html") {
     initEdit();
+  } else if (page === "search.html") {
+    initSearch();
   }
 }
 
@@ -186,4 +189,25 @@ function logToFirestore(appId, scoreDelta) {
     long: currentLong,
     timestamp: new Date()
   }).catch(console.error);
+}
+
+// ---- SEARCH PAGE FUNCTIONS ----
+function initSearch() {
+  const input = document.getElementById("searchInput");
+  const container = document.getElementById("results");
+  if (!input || !container) return;
+
+  input.addEventListener("input", async () => {
+    const query = input.value.trim().toLowerCase();
+    if (!query) {
+      container.innerHTML = "";
+      return;
+    }
+    const snapshot = await db.collection("things").get();
+    const matches = snapshot.docs.filter(doc => doc.data().name?.toLowerCase().includes(query));
+
+    container.innerHTML = matches.length
+      ? matches.map(doc => `<div class='search-result'>${doc.data().name}</div>`).join('')
+      : "<p>No results found.</p>";
+  });
 }
