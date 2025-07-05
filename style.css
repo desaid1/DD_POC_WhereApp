@@ -6,12 +6,10 @@ body {
   max-width: 420px;
   margin: auto;
 }
-
 h1, h2 {
   text-align: left;
   font-size: 24px;
 }
-
 input, textarea, select {
   background-color: white;
   color: black;
@@ -22,7 +20,6 @@ input, textarea, select {
   margin-bottom: 12px;
   width: 100%;
 }
-
 button {
   background-color: #A8D5BA;
   color: white;
@@ -34,34 +31,32 @@ button {
   cursor: pointer;
   margin-bottom: 12px;
 }
-
 button:hover {
   background-color: #91c3aa;
 }
-
+button.delete {
+  background-color: #f44336;
+  color: white;
+}
 label {
   font-weight: bold;
   margin-top: 10px;
   display: block;
 }
-
 #details-container div,
 #media-container div {
   margin-bottom: 12px;
 }
-
 table {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 12px;
 }
-
 td {
   padding: 4px;
   vertical-align: middle;
   border: 1px dashed gray;
 }
-
 .search-result {
   background: #f5f5f5;
   border: 1px solid #ccc;
@@ -69,7 +64,15 @@ td {
   margin-bottom: 8px;
   border-radius: 6px;
 }
-
+.apps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.results, .log {
+  margin-top: 30px;
+}
 .thing {
   background: #f5f5f5;
   padding: 14px;
@@ -82,45 +85,37 @@ td {
   mask-image: linear-gradient(to bottom, black 250px, transparent 300px);
   -webkit-mask-image: linear-gradient(to bottom, black 250px, transparent 300px);
 }
-
 .thing.expanded {
   max-height: none;
   mask-image: none;
   -webkit-mask-image: none;
 }
-
 .thing h3 {
   margin: 0 0 5px;
   color: #333;
 }
-
 .thing p {
   margin: 2px 0;
   color: #555;
 }
-
 .media-img {
   max-width: 100px;
   border-radius: 4px;
   margin: 6px 4px 0 0;
 }
-
 .score {
   margin-top: 10px;
   font-size: 16px;
 }
-
 .log {
   font-family: monospace;
   color: #555;
 }
-
 .edit-btn {
   margin-top: 10px;
   background-color: #A8D5BA;
   color: black;
 }
-
 .toggle-btn {
   position: absolute;
   bottom: 10px;
@@ -133,7 +128,6 @@ td {
   font-size: 12px;
   cursor: pointer;
 }
-
 .tag {
   display: inline-block;
   padding: 2px 8px;
@@ -142,33 +136,6 @@ td {
   font-weight: bold;
   margin-bottom: 6px;
 }
-
 .tag.public { background-color: #4caf50; color: white; }
 .tag.group { background-color: #ff9800; color: white; }
 .tag.private { background-color: #f44336; color: white; }
-
-#addThingBtn {
-  position: relative;
-  bottom: 0;
-  right: 0;
-  width: auto;
-  height: auto;
-  border-radius: 8px;
-  margin-top: 10px;
-  background-color: #A8D5BA;
-  color: black;
-  font-size: 16px;
-  padding: 8px 16px;
-  box-shadow: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.apps button {
-  margin-right: 10px;
-}
-
-.apps button:last-child {
-  margin-right: 0;
-}
