@@ -321,3 +321,107 @@ function submitThing() {
     });
   }
 }
+
+// ---- EDIT PAGE FUNCTIONS ----
+function initEdit() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+  if (!id) return;
+
+  db.collection("things").doc(id).get().then(doc => {
+    if (!doc.exists) return alert("Thing not found");
+
+    const thing = doc.data();
+    document.getElementById("thing-name").value = thing.name || "";
+    document.getElementById("thing-visibility").value = thing.visibility || "private";
+    document.getElementById("isLocationSource").checked = !!thing.isLocationSource;
+    document.getElementById("allowCopy").checked = !!thing.copy;
+
+    const details = Array.isArray(thing.flexibutes)
+      ? thing.flexibutes
+      : Object.entries(thing.flexibutes || {}).map(([key, val]) => ({ key, val }));
+
+    const detailsContainer = document.getElementById("details-container");
+    details.forEach(({ key, val }) => {
+      const div = document.createElement("div");
+      div.innerHTML = `<input placeholder="Key" type="text" value="${key}"><textarea placeholder="Value">${val}</textarea>`;
+      detailsContainer.appendChild(div);
+    });
+
+    const mediaContainer = document.getElementById("media-container");
+    (thing.media || []).forEach(link => {
+      const div = document.createElement("div");
+      div.innerHTML = `<input type="url" value="${link}" placeholder="Add link to image or file">`;
+      mediaContainer.appendChild(div);
+    });
+
+    document.getElementById("saveBtn").onclick = () => saveChanges(id);
+    document.getElementById("deleteBtn").onclick = () => deleteThing(id);
+  });
+}
+
+function saveChanges(id) {
+  const name = document.getElementById("thing-name").value.trim();
+  const visibility = document.getElementById("thing-visibility").value;
+  const isLocationSource = document.getElementById("isLocationSource").checked;
+  const isCopyAllowed = document.getElementById("allowCopy").checked;
+
+  if (!name) return alert("Please enter a name.");
+  if (!userId) return alert("User not signed in yet.");
+
+  const details = [...document.querySelectorAll("#details-container > div")].map(div => {
+    const [k, v] = div.querySelectorAll("input,textarea");
+    return { key: k.value.trim(), val: v.value.trim() };
+  }).filter(kv => kv.key && kv.val);
+
+  const media = [...document.querySelectorAll("#media-container input")].map(input => input.value.trim()).filter(Boolean);
+
+  const location = isLocationSource
+    ? { lat: 0, long: 0, source: 'device' }
+    : getSelectedLocation();
+
+  if (isLocationSource) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      storeUpdate({
+        lat: pos.coords.latitude.toFixed(5),
+        long: pos.coords.longitude.toFixed(5),
+        source: 'device'
+      });
+    }, () => alert("Location access denied."));
+  } else {
+    storeUpdate(location);
+  }
+
+  function storeUpdate(location) {
+    const thing = {
+      name,
+      visibility,
+      isLocationSource,
+      location,
+      flexibutes: details,
+      media,
+      userId,
+      copy: isCopyAllowed,
+      updatedAt: new Date().toISOString()
+    };
+
+    db.collection("things").doc(id).set(thing).then(() => {
+      alert("✅ Thing updated successfully!");
+      window.location.href = "index.html";
+    }).catch(err => {
+      console.error("Error updating thing:", err);
+      alert("❌ Failed to update thing.");
+    });
+  }
+}
+
+function deleteThing(id) {
+  if (!confirm("Are you sure you want to delete this Thing?")) return;
+  db.collection("things").doc(id).delete().then(() => {
+    alert("🗑️ Thing deleted successfully!");
+    window.location.href = "index.html";
+  }).catch(err => {
+    console.error("Error deleting thing:", err);
+    alert("❌ Failed to delete thing.");
+  });
+}
