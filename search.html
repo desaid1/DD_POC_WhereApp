@@ -9,69 +9,11 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="app.js" defer></script>
 </head>
 <body>
   <h2>Your Added Things</h2>
-  <input id="searchInput" type="text" placeholder="Search by name or key..." oninput="renderThings()" style="width: 100%; padding: 8px; margin-bottom: 20px;">
-  <div id="thingsList"></div>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAatek1caogYhCY0rXj9YrGC32E0lRJtUs",
-      authDomain: "whereapp-ideasdesai.firebaseapp.com",
-      projectId: "whereapp-ideasdesai"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
-    let userId = null;
-    let allThings = [];
-
-    auth.signInAnonymously().then(res => {
-      userId = res.user.uid;
-      fetchThings();
-    });
-
-    async function fetchThings() {
-      const snapshot = await db.collection("things").where("userId", "==", userId).get();
-      allThings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      renderThings();
-    }
-
-    function renderThings() {
-      const query = document.getElementById('searchInput').value.toLowerCase();
-      const filtered = allThings.filter(t => {
-        if (t.name?.toLowerCase().includes(query)) return true;
-        return Object.keys(t.flexibutes || {}).some(k => k.toLowerCase().includes(query));
-      });
-
-      const container = document.getElementById('thingsList');
-      container.innerHTML = '';
-
-      if (filtered.length === 0) {
-        container.innerHTML = '<p>No matching things found.</p>';
-        return;
-      }
-
-      filtered.forEach(thing => {
-        const div = document.createElement('div');
-        div.className = 'thing';
-
-        const mediaImages = (thing.media || []).filter(m => m.includes("http")).map(m => `<img src="${m}" class="media-img">`).join('');
-        const details = Object.entries(thing.flexibutes || {}).map(([k, v]) => `<p><strong>${k}:</strong> ${v}</p>`).join('');
-
-        div.innerHTML = `
-          <h3>${thing.name || 'Untitled Thing'}</h3>
-          ${mediaImages}<br>
-          ${details}
-          <p><strong>Location:</strong> ${thing.location?.source || 'Unknown'} (${thing.location?.lat}, ${thing.location?.long})</p>
-          <p><strong>Location Source:</strong> ${thing.isLocationSource ? '✅ Yes' : '❌ No'}</p>
-        `;
-
-        container.appendChild(div);
-      });
-    }
-  </script>
+  <input id="searchInput" type="text" placeholder="Search by name or key..." style="width: 100%; padding: 8px; margin-bottom: 20px;">
+  <div id="results"></div>
 </body>
 </html>
