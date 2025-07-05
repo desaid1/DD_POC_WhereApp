@@ -139,8 +139,8 @@ function updateScoreDisplay() {
 
 // ---- ADD PAGE FUNCTIONS ----
 function initAdd() {
-  document.getElementById("search-box").addEventListener("input", searchThings);
-  document.getElementById("isLocationSource").addEventListener("change", toggleDropdownState);
+  document.getElementById("search-box")?.addEventListener("input", searchThings);
+  document.getElementById("isLocationSource")?.addEventListener("change", toggleDropdownState);
   window.loadLocationPickerIfReady?.("location-section", userId, db);
 }
 
@@ -181,7 +181,12 @@ function toggleDropdownState() {
 }
 
 function getSelectedLocation() {
-  return (typeof window.getSelectedLocation === 'function') ? window.getSelectedLocation() : null;
+  const dropdown = document.getElementById("locationSourceSelect");
+  try {
+    return dropdown && dropdown.value ? JSON.parse(dropdown.value) : null;
+  } catch {
+    return null;
+  }
 }
 
 function submitThing() {
@@ -278,6 +283,37 @@ function initEdit() {
       mediaContainer.appendChild(div);
     });
 
+    // ✅ Load location sources and preselect current
+    const dropdown = document.getElementById("locationSourceSelect");
+    if (dropdown) {
+      db.collection("things")
+        .where("userId", "==", userId)
+        .where("isLocationSource", "==", true)
+        .get()
+        .then(snapshot => {
+          snapshot.forEach(doc => {
+            const locThing = doc.data();
+            const option = document.createElement("option");
+            option.value = JSON.stringify({
+              lat: locThing.location?.lat,
+              long: locThing.location?.long,
+              source: locThing.name || "Unknown"
+            });
+            option.textContent = `${locThing.name} (${locThing.location?.lat}, ${locThing.location?.long})`;
+            dropdown.appendChild(option);
+          });
+
+          if (thing.location?.source !== "device" && dropdown.options.length > 0) {
+            for (let opt of dropdown.options) {
+              if (opt.value.includes(thing.location?.lat) && opt.value.includes(thing.location?.long)) {
+                opt.selected = true;
+                break;
+              }
+            }
+          }
+        });
+    }
+
     document.getElementById("saveBtn").onclick = () => saveChanges(id);
     document.getElementById("deleteBtn").onclick = () => deleteThing(id);
   });
@@ -296,10 +332,15 @@ function saveChanges(id) {
 
   const media = [...document.querySelectorAll("#media-container input")].map(input => input.value.trim()).filter(Boolean);
 
+  const location = isLocationSource
+    ? { lat: 0, long: 0, source: 'device' }
+    : getSelectedLocation();
+
   const updatedThing = {
     name,
     visibility,
     isLocationSource,
+    location,
     flexibutes: details,
     media,
     userId,
