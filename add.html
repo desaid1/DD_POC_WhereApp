@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Add Thing</title>
+  <title>Add</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
@@ -12,7 +12,7 @@
   <script src="apps/locationPickerWrapper.js" defer></script>
 </head>
 <body>
-<h2>Add Thing</h2>
+<h2>Add</h2>
 <input id="search-box" placeholder="Search existing things..." oninput="searchThings()">
 <div id="search-results"></div>
 <label>Name</label>
@@ -33,18 +33,18 @@
   <input placeholder="Add link to image or file" type="url">
 </div>
 <button onclick="addMediaLink()">Add Media Link</button>
-<label>Mark as Location Source</label>
+<label>Location Source?</label>
 <table><tr>
   <td style="width: 40px;"><input type="checkbox" id="isLocationSource" onchange="toggleDropdownState()"></td>
-  <td><label for="isLocationSource">Mark as Location Source</label></td>
+  <td><label for="isLocationSource">Location Source?</label></td>
 </tr></table>
 <label>Allow Copy</label>
 <table><tr>
   <td style="width: 40px;"><input type="checkbox" id="allowCopy"></td>
-  <td><label for="allowCopy">Allow others to copy this Thing</label></td>
+  <td><label for="allowCopy">Allow Copy?</label></td>
 </tr></table>
 <div id="location-section" style="margin-bottom: 10px;"></div>
-<button onclick="submitThing()">Add Thing</button>
+<button onclick="submitThing()">Add</button>
 <script src="app.js" defer></script>
 </body>
 </html>
