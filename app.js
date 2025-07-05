@@ -125,32 +125,8 @@ function renderButtons(apps) {
       const run = () => {
         score += app.score;
         updateScoreDisplay();
-        logToFirestore(app.id, app.score);
-
-        if (app.whatsappMessage) {
-          let message = app.whatsappMessage
-            .replace("{{score}}", score)
-            .replace("{{lat}}", currentLat)
-            .replace("{{long}}", currentLong);
-
-          if (message.includes("{{mapLink}}")) {
-            const mapUrl = `https://maps.google.com/?q=${currentLat},${currentLong}`;
-            message = message.replace("{{mapLink}}", mapUrl);
-          }
-
-          const encoded = encodeURIComponent(message);
-          window.open(`https://wa.me/?text=${encoded}`);
-          logAction(`${app.label} shared on WhatsApp.`);
-        } else {
-          logAction(`${app.label} clicked. (+${app.score}) at ${currentLat}, ${currentLong}`);
-        }
       };
-
-      if (app.useLocation) {
-        getLocation(run);
-      } else {
-        run();
-      }
+      run();
     };
     container.appendChild(btn);
   });
@@ -159,167 +135,6 @@ function renderButtons(apps) {
 function updateScoreDisplay() {
   const el = document.getElementById("score");
   if (el) el.innerText = `Score: ${score}`;
-}
-
-function getLocation(callback) {
-  if (!navigator.geolocation) {
-    alert("Geolocation not supported");
-    return;
-  }
-  navigator.geolocation.getCurrentPosition(pos => {
-    currentLat = pos.coords.latitude.toFixed(5);
-    currentLong = pos.coords.longitude.toFixed(5);
-    callback();
-  }, err => {
-    alert("Location access denied.");
-  });
-}
-
-function logAction(action) {
-  const logDiv = document.getElementById("log");
-  const timestamp = new Date().toLocaleTimeString();
-  if (logDiv) logDiv.innerHTML += `[${timestamp}] ${action}<br>`;
-}
-
-function logToFirestore(appId, scoreDelta) {
-  db.collection("interactions").add({
-    userId: userId,
-    appId: appId,
-    scoreAdded: scoreDelta,
-    lat: currentLat,
-    long: currentLong,
-    timestamp: new Date()
-  }).catch(console.error);
-}
-
-// ---- SEARCH PAGE FUNCTIONS ----
-function initSearch() {
-  const input = document.getElementById("searchInput");
-  const container = document.getElementById("results");
-  if (!input || !container) return;
-
-  let allUserThings = [];
-
-  async function loadAndRenderAll() {
-    const snapshot = await db.collection("things").where("userId", "==", userId).get();
-    allUserThings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    renderSearchResults();
-  }
-
-  function renderSearchResults() {
-    const query = input.value.trim().toLowerCase();
-    const matches = allUserThings.filter(t => t.name?.toLowerCase().includes(query));
-
-    container.innerHTML = matches.length
-      ? matches.map(t => `<div class='search-result'>${t.name}</div>`).join('')
-      : "<p>No results found.</p>";
-  }
-
-  input.addEventListener("input", renderSearchResults);
-  loadAndRenderAll();
-}
-
-// ---- ADD PAGE FUNCTIONS ----
-function initAdd() {
-  const searchBox = document.getElementById("search-box");
-  if (searchBox) {
-    searchBox.addEventListener("input", searchThings);
-  }
-}
-
-function searchThings() {
-  const query = document.getElementById("search-box").value.trim().toLowerCase();
-  const resultsContainer = document.getElementById("search-results");
-  if (!query) return (resultsContainer.innerHTML = "");
-
-  db.collection("things")
-    .where("userId", "==", userId)
-    .get()
-    .then(snapshot => {
-      const filtered = snapshot.docs.filter(doc => doc.data().name?.toLowerCase().includes(query));
-      resultsContainer.innerHTML = filtered.length
-        ? filtered.map(doc => `<div class='search-result'><strong>${doc.data().name}</strong><br><button onclick=\"window.location.href='edit.html?id=${doc.id}'\">Edit</button></div>`).join('')
-        : '<p>No match found.</p>';
-    });
-}
-
-function addDetail() {
-  const container = document.getElementById('details-container');
-  const div = document.createElement('div');
-  div.innerHTML = `<input placeholder="Key" type="text"><textarea placeholder="Value"></textarea>`;
-  container.appendChild(div);
-}
-
-function addMediaLink() {
-  const container = document.getElementById('media-container');
-  const div = document.createElement('div');
-  div.innerHTML = `<input placeholder="Add link to image or file" type="url">`;
-  container.appendChild(div);
-}
-
-function toggleDropdownState() {
-  const dropdown = document.getElementById("locationSourceSelect");
-  const isSource = document.getElementById("isLocationSource").checked;
-  if (dropdown) dropdown.disabled = isSource;
-}
-
-function getSelectedLocation() {
-  return (typeof window.getSelectedLocation === 'function') ? window.getSelectedLocation() : null;
-}
-
-function submitThing() {
-  const name = document.getElementById('thing-name').value.trim();
-  const visibility = document.getElementById('thing-visibility').value;
-  const isLocationSource = document.getElementById('isLocationSource').checked;
-  const isCopyAllowed = document.getElementById('allowCopy').checked;
-
-  if (!name) return alert("Please enter a name.");
-  if (!userId) return alert("User not signed in yet.");
-
-  const details = [...document.querySelectorAll('#details-container > div')].map(div => {
-    const [k, v] = div.querySelectorAll('input,textarea');
-    return { key: k.value.trim(), val: v.value.trim() };
-  }).filter(kv => kv.key && kv.val);
-
-  const media = [...document.querySelectorAll('#media-container input')].map(input => input.value.trim()).filter(Boolean);
-
-  const location = isLocationSource
-    ? { lat: 0, long: 0, source: 'device' }
-    : getSelectedLocation();
-
-  if (isLocationSource) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      storeThing({
-        lat: pos.coords.latitude.toFixed(5),
-        long: pos.coords.longitude.toFixed(5),
-        source: 'device'
-      });
-    }, () => alert("Location access denied."));
-  } else {
-    storeThing(location);
-  }
-
-  function storeThing(location) {
-    const thing = {
-      name,
-      visibility,
-      isLocationSource,
-      location,
-      flexibutes: details,
-      media,
-      userId,
-      copy: isCopyAllowed,
-      createdAt: new Date().toISOString()
-    };
-
-    db.collection("things").add(thing).then(() => {
-      alert("✅ Thing added successfully!");
-      window.location.href = "index.html";
-    }).catch(err => {
-      console.error("Error adding thing:", err);
-      alert("❌ Failed to add thing.");
-    });
-  }
 }
 
 // ---- EDIT PAGE FUNCTIONS ----
@@ -366,9 +181,6 @@ function saveChanges(id) {
   const isLocationSource = document.getElementById("isLocationSource").checked;
   const isCopyAllowed = document.getElementById("allowCopy").checked;
 
-  if (!name) return alert("Please enter a name.");
-  if (!userId) return alert("User not signed in yet.");
-
   const details = [...document.querySelectorAll("#details-container > div")].map(div => {
     const [k, v] = div.querySelectorAll("input,textarea");
     return { key: k.value.trim(), val: v.value.trim() };
@@ -376,43 +188,24 @@ function saveChanges(id) {
 
   const media = [...document.querySelectorAll("#media-container input")].map(input => input.value.trim()).filter(Boolean);
 
-  const location = isLocationSource
-    ? { lat: 0, long: 0, source: 'device' }
-    : getSelectedLocation();
+  const updatedThing = {
+    name,
+    visibility,
+    isLocationSource,
+    flexibutes: details,
+    media,
+    userId,
+    copy: isCopyAllowed,
+    updatedAt: new Date().toISOString()
+  };
 
-  if (isLocationSource) {
-    navigator.geolocation.getCurrentPosition(pos => {
-      storeUpdate({
-        lat: pos.coords.latitude.toFixed(5),
-        long: pos.coords.longitude.toFixed(5),
-        source: 'device'
-      });
-    }, () => alert("Location access denied."));
-  } else {
-    storeUpdate(location);
-  }
-
-  function storeUpdate(location) {
-    const thing = {
-      name,
-      visibility,
-      isLocationSource,
-      location,
-      flexibutes: details,
-      media,
-      userId,
-      copy: isCopyAllowed,
-      updatedAt: new Date().toISOString()
-    };
-
-    db.collection("things").doc(id).set(thing).then(() => {
-      alert("✅ Thing updated successfully!");
-      window.location.href = "index.html";
-    }).catch(err => {
-      console.error("Error updating thing:", err);
-      alert("❌ Failed to update thing.");
-    });
-  }
+  db.collection("things").doc(id).set(updatedThing).then(() => {
+    alert("✅ Thing updated successfully!");
+    window.location.href = "index.html";
+  }).catch(err => {
+    console.error("Error updating thing:", err);
+    alert("❌ Failed to update thing.");
+  });
 }
 
 function deleteThing(id) {
