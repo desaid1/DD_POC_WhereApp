@@ -30,115 +30,19 @@ function initPage() {
   }
 }
 
-// ---- INDEX PAGE FUNCTIONS ----
-function initIndex() {
-  fetchThings();
-  loadApps();
-  document.getElementById('searchInput')?.addEventListener('input', renderThings);
+function addDetail() {
+  const container = document.getElementById("details-container");
+  const div = document.createElement("div");
+  div.innerHTML = `<input placeholder="Key" type="text"><textarea placeholder="Value"></textarea>`;
+  container.appendChild(div);
 }
 
-let allThings = [];
-let score = 0;
-let currentLat = null;
-let currentLong = null;
-
-async function fetchThings() {
-  const snapshot = await db.collection("things").get();
-  allThings = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  renderThings();
-}
-
-function renderThings() {
-  const query = document.getElementById('searchInput')?.value.toLowerCase();
-  const container = document.getElementById('thingsList');
-  if (!container) return;
-  container.innerHTML = '';
-
-  const filtered = allThings.filter(t => {
-    const nameMatch = t.name?.toLowerCase().includes(query);
-    const flexMatch = (Array.isArray(t.flexibutes)
-      ? t.flexibutes
-      : Object.entries(t.flexibutes || {}).map(([key, val]) => ({ key, val }))
-    ).some(({ key, val }) => key.toLowerCase().includes(query) || val.toLowerCase().includes(query));
-    return nameMatch || flexMatch;
-  });
-
-  if (filtered.length === 0) {
-    container.innerHTML = '<p style="color:#aaa">No matching things found.</p>';
-    return;
-  }
-
-  filtered.forEach(thing => {
-    const div = document.createElement('div');
-    div.className = 'thing';
-
-    const mediaImages = (thing.media || [])
-      .filter(m => m.includes("http"))
-      .map(m => `<img src="${m}" class="media-img">`)
-      .join('');
-
-    const details = Array.isArray(thing.flexibutes)
-      ? thing.flexibutes.map(({ key, val }) => `<p><strong>${key}:</strong> ${val}</p>`).join('')
-      : Object.entries(thing.flexibutes || {}).map(([k, v]) => `<p><strong>${k}:</strong> ${v}</p>`).join('');
-
-    const locationText = thing.location?.lat && thing.location?.long
-      ? `${thing.location?.source || 'device'} (${thing.location.lat}, ${thing.location.long})`
-      : 'Unknown';
-
-    div.innerHTML = `
-      <span class="tag ${thing.visibility || 'private'}">${thing.visibility || 'private'}</span><br>
-      <h3>${thing.name || 'Untitled Thing'}</h3>
-      ${mediaImages}<br>
-      ${details}
-      <p><strong>Location:</strong> ${locationText}</p>
-      <p><strong>Visibility:</strong> ${thing.visibility || 'private'}</p>
-      <button class="edit-btn" onclick="location.href='edit.html?id=${thing.id}'">✏️ Edit</button>
-    `;
-
-    const toggle = document.createElement('button');
-    toggle.className = 'toggle-btn';
-    toggle.textContent = 'More';
-    toggle.onclick = () => {
-      div.classList.toggle('expanded');
-      toggle.textContent = div.classList.contains('expanded') ? 'Less' : 'More';
-    };
-    div.appendChild(toggle);
-
-    container.appendChild(div);
-  });
-}
-
-function loadApps() {
-  const files = ["owl", "unicorn", "hello"];
-  Promise.all(
-    files.map(async id => {
-      const res = await fetch(`apps/${id}.json`);
-      return await res.json();
-    })
-  ).then(renderButtons);
-}
-
-function renderButtons(apps) {
-  const container = document.getElementById("buttons");
-  if (!container) return;
-  container.innerHTML = "";
-  apps.forEach(app => {
-    const btn = document.createElement("button");
-    btn.textContent = app.label;
-    btn.onclick = () => {
-      const run = () => {
-        score += app.score;
-        updateScoreDisplay();
-      };
-      run();
-    };
-    container.appendChild(btn);
-  });
-}
-
-function updateScoreDisplay() {
-  const el = document.getElementById("score");
-  if (el) el.innerText = `Score: ${score}`;
+function addMediaLink() {
+  const container = document.getElementById("media-container");
+  const input = document.createElement("input");
+  input.placeholder = "Add link to image or file";
+  input.type = "url";
+  container.appendChild(input);
 }
 
 function initEdit() {
@@ -175,7 +79,7 @@ function initEdit() {
     });
 
     window.loadLocationPickerIfReady?.("location-section", userId, db, data.location);
-    populateLocationSourceDropdown();
+    populateLocationSourceDropdown(data.location?.sourceId || "");
   });
 
   document.getElementById("saveBtn")?.addEventListener("click", async () => {
@@ -216,9 +120,13 @@ function initEdit() {
       alert("Save failed. Check console.");
     }
   });
+
+  document.querySelector("button[onclick='addDetail()']")?.addEventListener("click", addDetail);
+  document.querySelector("button[onclick='addMediaLink()']")?.addEventListener("click", addMediaLink);
+  document.getElementById("deleteBtn")?.addEventListener("click", deleteThing);
 }
 
-function populateLocationSourceDropdown() {
+function populateLocationSourceDropdown(selectedId = "") {
   const select = document.getElementById("locationSourceSelect");
   if (!select) return;
   select.innerHTML = '<option value="">Select from saved location sources...</option>';
@@ -231,9 +139,10 @@ function populateLocationSourceDropdown() {
         const option = document.createElement("option");
         option.value = doc.id;
         option.textContent = doc.data().name || "Unnamed Thing";
+        if (doc.id === selectedId) option.selected = true;
         select.appendChild(option);
       });
     });
 }
 
-// The rest (initAdd, toggleDropdownState, etc.) already present — unchanged.
+
