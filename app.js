@@ -223,7 +223,6 @@ function initAdd() {
   } catch (err) {
     logError("💥 Error in initAdd: " + err.message);
   }
-}
   document.getElementById("search-box")?.addEventListener("input", searchThings);
   document.getElementById("isLocationSource")?.addEventListener("change", toggleDropdownState);
   document.getElementById("addDetailBtn")?.addEventListener("click", addDetail);
