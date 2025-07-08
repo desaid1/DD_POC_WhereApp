@@ -149,7 +149,6 @@ function getSelectedLocation() {
   return selected?.location || null;
 }
 
-
 function searchThings() {
   const query = document.getElementById("search-box").value.trim().toLowerCase();
   const resultsContainer = document.getElementById("search-results");
@@ -189,4 +188,47 @@ function populateLocationSourceDropdown() {
         select.appendChild(option);
       });
     });
+}
+
+async function submitThing() {
+  const name = document.getElementById('thing-name').value.trim();
+  const visibility = document.getElementById('thing-visibility').value;
+  const allowCopy = document.getElementById('allowCopy').checked;
+  const isLocationSource = document.getElementById('isLocationSource').checked;
+
+  const flexibutes = Array.from(document.querySelectorAll('#details-container > div')).map(div => {
+    const key = div.querySelector('input').value.trim();
+    const val = div.querySelector('textarea').value.trim();
+    return key ? { key, val } : null;
+  }).filter(Boolean);
+
+  const media = Array.from(document.querySelectorAll('#media-container input')).map(inp => inp.value.trim()).filter(Boolean);
+
+  let location = null;
+  if (isLocationSource && typeof window.getPickedLocation === 'function') {
+    location = window.getPickedLocation();
+  } else {
+    location = getSelectedLocation();
+  }
+
+  const payload = {
+    userId,
+    name,
+    visibility,
+    allowCopy,
+    isLocationSource,
+    flexibutes,
+    media,
+    location,
+    created: firebase.firestore.FieldValue.serverTimestamp(),
+  };
+
+  try {
+    await db.collection('things').add(payload);
+    alert('Saved successfully!');
+    window.location.href = 'index.html';
+  } catch (err) {
+    console.error('Error adding thing:', err);
+    alert('Failed to save. See console for details.');
+  }
 }
