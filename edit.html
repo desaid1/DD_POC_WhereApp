@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:,">
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -15,46 +16,37 @@
 <body>
   <h2>Edit</h2>
 
-  <label>Name</label>
-  <input id="thing-name" type="text">
+  <input id="thing-name" type="text" placeholder="Name of the thing (e.g. Universe)">
 
-  <label>Visibility</label>
   <select id="thing-visibility">
     <option value="private">Private</option>
     <option value="group">Group</option>
     <option value="public">Public</option>
   </select>
 
-  <label>Details</label>
   <div id="details-container"></div>
   <button onclick="addDetail()">Add Detail</button>
 
-  <label>Media Links</label>
   <div id="media-container"></div>
   <button onclick="addMediaLink()">Add Media Link</button>
 
   <table>
     <tr>
       <td style="width: 40px;"><input type="checkbox" id="isLocationSource" onchange="toggleDropdownState()"></td>
-      <td><label for="isLocationSource">Location Source?</label></td>
-    </tr>
-  </table>
-
-  <!-- 🔽 Dropdown to select from saved location sources -->
-  <select id="locationSourceSelect">
-    <option value="">Select from saved location sources...</option>
-  </select>
-
-  <table>
-    <tr>
-      <td style="width: 40px;"><input type="checkbox" id="allowCopy"></td>
-      <td><label for="allowCopy">Allow Copy</label></td>
+      <td><label for="isLocationSource">Use this as a location anchor for related things</label></td>
     </tr>
   </table>
 
   <div id="location-section" style="margin-bottom: 10px;"></div>
 
+  <table>
+    <tr>
+      <td style="width: 40px;"><input type="checkbox" id="allowCopy"></td>
+      <td><label for="allowCopy">Allow others to duplicate and customize this Thing</label></td>
+    </tr>
+  </table>
+
   <button id="saveBtn">💾 Save Changes</button>
-  <button id="deleteBtn" class="delete">🗑️ Delete Thing</button>
+  <button id="deleteBtn" class="delete" onclick="deleteThing()">🗑️ Delete Thing</button>
 </body>
 </html>
