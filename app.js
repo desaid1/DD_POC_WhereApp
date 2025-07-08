@@ -8,6 +8,27 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
+function logError(msg) {
+  console.error(msg);
+  const debugLog = document.getElementById("debug-log");
+  if (debugLog) debugLog.textContent = msg;
+}
+
+function addDetail() {
+  const container = document.getElementById("details-container");
+  const div = document.createElement("div");
+  div.innerHTML = `<input placeholder="Key" type="text"><textarea placeholder="Value"></textarea>`;
+  container.appendChild(div);
+}
+
+function addMediaLink() {
+  const container = document.getElementById("media-container");
+  const div = document.createElement("div");
+  div.innerHTML = `<input type="url" placeholder="Add link to image or file">`;
+  container.appendChild(div);
+}
+
+
 let userId = null;
 window.addEventListener('DOMContentLoaded', () => {
   auth.signInAnonymously().then(res => {
@@ -165,6 +186,45 @@ function searchThings() {
 }
 
 function initAdd() {
+  console.log("🔧 initAdd() running...");
+
+  try {
+    document.getElementById("search-box")?.addEventListener("input", () => {
+      console.log("🔍 Search input triggered");
+      searchThings();
+    });
+
+    document.getElementById("isLocationSource")?.addEventListener("change", () => {
+      console.log("📍 Location Source toggled");
+      toggleDropdownState();
+    });
+
+    document.getElementById("addDetailBtn")?.addEventListener("click", () => {
+      console.log("➕ Add Detail clicked");
+      addDetail();
+    });
+
+    document.getElementById("addMediaBtn")?.addEventListener("click", () => {
+      console.log("🖼️ Add Media clicked");
+      addMediaLink();
+    });
+
+    document.getElementById("submitBtn")?.addEventListener("click", () => {
+      console.log("🚀 Submit clicked");
+      submitThing();
+    });
+
+    window.loadLocationPickerIfReady?.("location-section", userId, db);
+    console.log("📍 Invoked loadLocationPickerIfReady()");
+
+    populateLocationSourceDropdown(() => {
+      console.log("📄 Location source dropdown populated");
+    });
+
+  } catch (err) {
+    logError("💥 Error in initAdd: " + err.message);
+  }
+}
   document.getElementById("search-box")?.addEventListener("input", searchThings);
   document.getElementById("isLocationSource")?.addEventListener("change", toggleDropdownState);
   document.getElementById("addDetailBtn")?.addEventListener("click", addDetail);
