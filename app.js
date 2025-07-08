@@ -160,7 +160,7 @@ function searchThings() {
     .then(snapshot => {
       const filtered = snapshot.docs.filter(doc => doc.data().name?.toLowerCase().includes(query));
       resultsContainer.innerHTML = filtered.length
-        ? filtered.map(doc => `<div class='search-result'><strong>${doc.data().name}</strong><br><button onclick="location.href='edit.html?id=${doc.id}'">Edit</button></div>`).join('')
+        ? filtered.map(doc => `<div class='search-result'><strong>${doc.data().name}</strong><br><button onclick=\"location.href='edit.html?id=${doc.id}'\">Edit</button></div>`).join('')
         : '<p>No match found.</p>';
     });
 }
@@ -241,3 +241,21 @@ async function submitThing() {
 }
 
 window.submitThing = submitThing;
+
+async function deleteThing() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+  if (!id) return alert("No Thing ID found in URL.");
+  const confirmed = confirm("Are you sure you want to delete this Thing?");
+  if (!confirmed) return;
+  try {
+    await db.collection("things").doc(id).delete();
+    alert("Thing deleted.");
+    window.location.href = "index.html";
+  } catch (err) {
+    console.error("Error deleting thing:", err);
+    alert("Failed to delete. See console for details.");
+  }
+}
+
+window.deleteThing = deleteThing;
