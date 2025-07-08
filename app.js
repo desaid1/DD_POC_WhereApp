@@ -28,7 +28,6 @@ function addMediaLink() {
   container.appendChild(div);
 }
 
-
 let userId = null;
 window.addEventListener('DOMContentLoaded', () => {
   auth.signInAnonymously().then(res => {
