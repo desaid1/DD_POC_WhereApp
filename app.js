@@ -8,26 +8,6 @@ firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-function logError(msg) {
-  console.error(msg);
-  const debugLog = document.getElementById("debug-log");
-  if (debugLog) debugLog.textContent = msg;
-}
-
-function addDetail() {
-  const container = document.getElementById("details-container");
-  const div = document.createElement("div");
-  div.innerHTML = `<input placeholder="Key" type="text"><textarea placeholder="Value"></textarea>`;
-  container.appendChild(div);
-}
-
-function addMediaLink() {
-  const container = document.getElementById("media-container");
-  const div = document.createElement("div");
-  div.innerHTML = `<input type="url" placeholder="Add link to image or file">`;
-  container.appendChild(div);
-}
-
 let userId = null;
 window.addEventListener('DOMContentLoaded', () => {
   auth.signInAnonymously().then(res => {
@@ -169,10 +149,12 @@ function getSelectedLocation() {
   return selected?.location || null;
 }
 
+
 function searchThings() {
-  const query = document.getElementById("search-box")?.value.trim().toLowerCase();
+  const query = document.getElementById("search-box").value.trim().toLowerCase();
   const resultsContainer = document.getElementById("search-results");
-  if (!query || !resultsContainer) return;
+  if (!query) return (resultsContainer.innerHTML = "");
+
   db.collection("things")
     .where("userId", "==", userId)
     .get()
@@ -185,103 +167,15 @@ function searchThings() {
 }
 
 function initAdd() {
-  console.log("🔧 initAdd() running...");
-
-  try {
-    document.getElementById("search-box")?.addEventListener("input", () => {
-      console.log("🔍 Search input triggered");
-      searchThings();
-    });
-
-    document.getElementById("isLocationSource")?.addEventListener("change", () => {
-      console.log("📍 Location Source toggled");
-      toggleDropdownState();
-    });
-
-    document.getElementById("addDetailBtn")?.addEventListener("click", () => {
-      console.log("➕ Add Detail clicked");
-      addDetail();
-    });
-
-    document.getElementById("addMediaBtn")?.addEventListener("click", () => {
-      console.log("🖼️ Add Media clicked");
-      addMediaLink();
-    });
-
-    document.getElementById("submitBtn")?.addEventListener("click", () => {
-      console.log("🚀 Submit clicked");
-      submitThing();
-    });
-
-    window.loadLocationPickerIfReady?.("location-section", userId, db);
-    console.log("📍 Invoked loadLocationPickerIfReady()");
-
-    populateLocationSourceDropdown(() => {
-      console.log("📄 Location source dropdown populated");
-    });
-
-  } catch (err) {
-    logError("💥 Error in initAdd: " + err.message);
   document.getElementById("search-box")?.addEventListener("input", searchThings);
   document.getElementById("isLocationSource")?.addEventListener("change", toggleDropdownState);
-  document.getElementById("addDetailBtn")?.addEventListener("click", addDetail);
-  document.getElementById("addMediaBtn")?.addEventListener("click", addMediaLink);
-  document.getElementById("submitBtn")?.addEventListener("click", submitThing);
   window.loadLocationPickerIfReady?.("location-section", userId, db);
   populateLocationSourceDropdown();
 }
 
-function initEdit() {
-  const params = new URLSearchParams(window.location.search);
-  const id = params.get("id");
-  if (!id) return;
-
-  const dropdown = document.getElementById("locationSourceSelect");
-  if (dropdown) dropdown.disabled = false;
-  populateLocationSourceDropdown(() => {
-    db.collection("things").doc(id).get().then(doc => {
-      if (!doc.exists) return alert("Thing not found");
-
-      const thing = doc.data();
-      document.getElementById("thing-name").value = thing.name || "";
-      document.getElementById("thing-visibility").value = thing.visibility || "private";
-      document.getElementById("isLocationSource").checked = !!thing.isLocationSource;
-      document.getElementById("allowCopy").checked = !!thing.copy;
-
-      if (!thing.isLocationSource && thing.location?.source && thing.location?.lat && thing.location?.long) {
-        const locSourceSelect = document.getElementById("locationSourceSelect");
-        const matched = [...locSourceSelect.options].find(opt => opt.textContent.includes(thing.location.source));
-        if (matched) locSourceSelect.value = matched.value;
-      }
-
-      const details = Array.isArray(thing.flexibutes)
-        ? thing.flexibutes
-        : Object.entries(thing.flexibutes || {}).map(([key, val]) => ({ key, val }));
-
-      const detailsContainer = document.getElementById("details-container");
-      details.forEach(({ key, val }) => {
-        const div = document.createElement("div");
-        div.innerHTML = `<input placeholder="Key" type="text" value="${key}"><textarea placeholder="Value">${val}</textarea>`;
-        detailsContainer.appendChild(div);
-      });
-
-      const mediaContainer = document.getElementById("media-container");
-      (thing.media || []).forEach(link => {
-        const div = document.createElement("div");
-        div.innerHTML = `<input type="url" value="${link}" placeholder="Add link to image or file">`;
-        mediaContainer.appendChild(div);
-      });
-
-      document.getElementById("saveBtn").onclick = () => saveChanges(id);
-      document.getElementById("deleteBtn").onclick = () => deleteThing(id);
-    });
-  });
-}
-
-function populateLocationSourceDropdown(callback) {
+function populateLocationSourceDropdown() {
   const select = document.getElementById("locationSourceSelect");
   if (!select) return;
-  select.innerHTML = '<option value="">Select from saved location sources...</option>';
 
   db.collection("things")
     .where("userId", "==", userId)
@@ -294,103 +188,5 @@ function populateLocationSourceDropdown(callback) {
         option.textContent = doc.data().name || "Unnamed Thing";
         select.appendChild(option);
       });
-      if (typeof callback === "function") callback();
     });
-}
-
-function toggleDropdownState() {
-  const dropdown = document.getElementById("locationSourceSelect");
-  const isSource = document.getElementById("isLocationSource").checked;
-  if (dropdown) dropdown.disabled = isSource;
-}
-
-function initSearch() {
-  fetchThings();
-  document.getElementById("searchInput")?.addEventListener("input", renderThings);
-}
-
-function saveChanges(id) {
-  const name = document.getElementById("thing-name").value.trim();
-  const visibility = document.getElementById("thing-visibility").value;
-  const isLocationSource = document.getElementById("isLocationSource").checked;
-  const isCopyAllowed = document.getElementById("allowCopy").checked;
-
-  const details = [...document.querySelectorAll("#details-container > div")].map(div => {
-    const [k, v] = div.querySelectorAll("input,textarea");
-    return { key: k.value.trim(), val: v.value.trim() };
-  }).filter(kv => kv.key && kv.val);
-
-  const media = [...document.querySelectorAll("#media-container input")].map(input => input.value.trim()).filter(Boolean);
-
-  const location = isLocationSource
-    ? { lat: 0, long: 0, source: 'device' }
-    : getSelectedLocation();
-
-  const updatedThing = {
-    name,
-    visibility,
-    isLocationSource,
-    flexibutes: details,
-    media,
-    userId,
-    copy: isCopyAllowed,
-    location,
-    updatedAt: new Date().toISOString()
-  };
-
-  db.collection("things").doc(id).set(updatedThing).then(() => {
-    alert("✅ Thing updated successfully!");
-    window.location.href = "index.html";
-  }).catch(err => {
-    console.error("Error updating thing:", err);
-    alert("❌ Failed to update thing.");
-  });
-}
-
-function deleteThing(id) {
-  if (!confirm("Are you sure you want to delete this Thing?")) return;
-  db.collection("things").doc(id).delete().then(() => {
-    alert("🗑️ Thing deleted successfully!");
-    window.location.href = "index.html";
-  }).catch(err => {
-    console.error("Error deleting thing:", err);
-    alert("❌ Failed to delete thing.");
-  });
-}
-
-function submitThing() {
-  const name = document.getElementById("thing-name").value.trim();
-  const visibility = document.getElementById("thing-visibility").value;
-  const isLocationSource = document.getElementById("isLocationSource").checked;
-  const isCopyAllowed = document.getElementById("allowCopy").checked;
-
-  const details = [...document.querySelectorAll("#details-container > div")].map(div => {
-    const [k, v] = div.querySelectorAll("input,textarea");
-    return { key: k.value.trim(), val: v.value.trim() };
-  }).filter(kv => kv.key && kv.val);
-
-  const media = [...document.querySelectorAll("#media-container input")].map(input => input.value.trim()).filter(Boolean);
-
-  const location = isLocationSource
-    ? { lat: 0, long: 0, source: 'device' }
-    : getSelectedLocation();
-
-  const newThing = {
-    name,
-    visibility,
-    isLocationSource,
-    flexibutes: details,
-    media,
-    userId,
-    copy: isCopyAllowed,
-    location,
-    createdAt: new Date().toISOString()
-  };
-
-  db.collection("things").add(newThing).then(() => {
-    alert("✅ Thing added successfully!");
-    window.location.href = "index.html";
-  }).catch(err => {
-    logError("❌ Failed to add thing: " + err.message);
-  });
 }
