@@ -230,8 +230,6 @@ function initAdd() {
   document.getElementById("submitBtn")?.addEventListener("click", submitThing);
   window.loadLocationPickerIfReady?.("location-section", userId, db);
   populateLocationSourceDropdown();
-}
-
 function initEdit() {
   const params = new URLSearchParams(window.location.search);
   const id = params.get("id");
