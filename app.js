@@ -190,6 +190,13 @@ function populateLocationSourceDropdown() {
     });
 }
 
+function toggleDropdownState() {
+  const isChecked = document.getElementById("isLocationSource")?.checked;
+  const dropdown = document.getElementById("locationSourceSelect");
+  if (!dropdown) return;
+  dropdown.disabled = isChecked;
+}
+
 async function submitThing() {
   const name = document.getElementById('thing-name').value.trim();
   const visibility = document.getElementById('thing-visibility').value;
@@ -232,3 +239,5 @@ async function submitThing() {
     alert('Failed to save. See console for details.');
   }
 }
+
+window.submitThing = submitThing;
