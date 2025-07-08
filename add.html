@@ -17,31 +17,28 @@
 <h2>Add</h2>
 <input id="search-box" placeholder="Search existing things..." oninput="searchThings()">
 <div id="search-results"></div>
-<label>Name</label>
-<input id="thing-name" type="text">
-<label>Visibility</label>
+<input id="thing-name" type="text" placeholder="Name of the thing (e.g. Universe)">
 <select id="thing-visibility">
   <option value="private">Private</option>
   <option value="group">Group</option>
   <option value="public">Public</option>
 </select>
-<label>Details</label>
 <div id="details-container">
-  <div><input placeholder="Key" type="text"><textarea placeholder="Value"></textarea></div>
+  <div>
+    <input placeholder="Key (e.g. Hello)" type="text">
+    <textarea placeholder="Value (e.g. World)"></textarea>
+  </div>
 </div>
 <button onclick="addDetail()">Add Detail</button>
-<label>Media Links</label>
 <div id="media-container">
-  <input placeholder="Add link to image or file" type="url">
+  <input placeholder="Link to image or file (e.g. https://...)" type="url">
 </div>
 <button onclick="addMediaLink()">Add Media Link</button>
-<label>Location Source?</label>
 <table><tr>
   <td style="width: 40px;"><input type="checkbox" id="isLocationSource" onchange="toggleDropdownState()"></td>
   <td><label for="isLocationSource">Location Source?</label></td>
 </tr></table>
 <div id="location-section" style="margin-bottom: 10px;"></div>
-<label>Allow Copy</label>
 <table><tr>
   <td style="width: 40px;"><input type="checkbox" id="allowCopy"></td>
   <td><label for="allowCopy">Allow Copy?</label></td>
