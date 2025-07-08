@@ -223,6 +223,7 @@ function initAdd() {
   } catch (err) {
     logError("💥 Error in initAdd: " + err.message);
   }
+}
   document.getElementById("search-box")?.addEventListener("input", searchThings);
   document.getElementById("isLocationSource")?.addEventListener("change", toggleDropdownState);
   document.getElementById("addDetailBtn")?.addEventListener("click", addDetail);
@@ -230,6 +231,8 @@ function initAdd() {
   document.getElementById("submitBtn")?.addEventListener("click", submitThing);
   window.loadLocationPickerIfReady?.("location-section", userId, db);
   populateLocationSourceDropdown();
+}
+
 function initEdit() {
   const params = new URLSearchParams(window.location.search);
   const id = params.get("id");
@@ -354,5 +357,42 @@ function deleteThing(id) {
   }).catch(err => {
     console.error("Error deleting thing:", err);
     alert("❌ Failed to delete thing.");
+  });
+}
+
+function submitThing() {
+  const name = document.getElementById("thing-name").value.trim();
+  const visibility = document.getElementById("thing-visibility").value;
+  const isLocationSource = document.getElementById("isLocationSource").checked;
+  const isCopyAllowed = document.getElementById("allowCopy").checked;
+
+  const details = [...document.querySelectorAll("#details-container > div")].map(div => {
+    const [k, v] = div.querySelectorAll("input,textarea");
+    return { key: k.value.trim(), val: v.value.trim() };
+  }).filter(kv => kv.key && kv.val);
+
+  const media = [...document.querySelectorAll("#media-container input")].map(input => input.value.trim()).filter(Boolean);
+
+  const location = isLocationSource
+    ? { lat: 0, long: 0, source: 'device' }
+    : getSelectedLocation();
+
+  const newThing = {
+    name,
+    visibility,
+    isLocationSource,
+    flexibutes: details,
+    media,
+    userId,
+    copy: isCopyAllowed,
+    location,
+    createdAt: new Date().toISOString()
+  };
+
+  db.collection("things").add(newThing).then(() => {
+    alert("✅ Thing added successfully!");
+    window.location.href = "index.html";
+  }).catch(err => {
+    logError("❌ Failed to add thing: " + err.message);
   });
 }
