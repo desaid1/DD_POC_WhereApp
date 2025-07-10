@@ -1,0 +1,459 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>KohThai</title>
+    <style>
+    body {
+  font-family: 'Nunito Sans', sans-serif;
+  background: white;
+  color: black;
+  padding: 30px 20px;
+  max-width: 420px;
+  margin: auto;
+}
+h1, h2 {
+  text-align: left;
+  font-size: 24px;
+}
+input, textarea, select {
+  background-color: white;
+  color: black;
+  border: 2px solid #A8D5BA;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 16px;
+  margin-bottom: 12px;
+  width: 100%;
+}
+button {
+  background-color: #A8D5BA;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+button:hover {
+  background-color: #91c3aa;
+}
+button.delete {
+  background-color: #f44336;
+  color: white;
+}
+label {
+  font-weight: bold;
+  margin-top: 10px;
+  display: block;
+}
+#details-container div,
+#media-container div {
+  margin-bottom: 12px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 12px;
+}
+td {
+  padding: 4px;
+  vertical-align: middle;
+  border: 1px dashed gray;
+}
+.search-result {
+  background: #f5f5f5;
+  border: 1px solid #ccc;
+  padding: 8px;
+  margin-bottom: 8px;
+  border-radius: 6px;
+}
+.apps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.results, .log {
+  margin-top: 30px;
+}
+.thing {
+  background: #f5f5f5;
+  padding: 14px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  position: relative;
+  transition: max-height 0.3s ease;
+  max-height: 300px;
+  mask-image: linear-gradient(to bottom, black 250px, transparent 300px);
+  -webkit-mask-image: linear-gradient(to bottom, black 250px, transparent 300px);
+}
+.thing.expanded {
+  max-height: none;
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+.thing h3 {
+  margin: 0 0 5px;
+  color: #333;
+}
+.thing p {
+  margin: 2px 0;
+  color: #555;
+}
+.media-img {
+  max-width: 100px;
+  border-radius: 4px;
+  margin: 6px 4px 0 0;
+}
+.score {
+  margin-top: 10px;
+  font-size: 16px;
+}
+.log {
+  font-family: monospace;
+  color: #555;
+}
+.edit-btn {
+  margin-top: 10px;
+  background-color: #A8D5BA;
+  color: black;
+}
+.toggle-btn {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: #A8D5BA;
+  color: black;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+.tag.public { background-color: #4caf50; color: white; }
+.tag.group { background-color: #ff9800; color: white; }
+.tag.private { background-color: #f44336; color: white; }
+
+    </style>
+</head>
+<body>
+
+<!-- Index Section -->
+<section id="home-section">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WhereApp – Simplifying Sustainability</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+</head>
+<body>
+<h1>WhereApp</h1>
+<input type="text" id="searchInput" placeholder="Search or trigger..." />
+<div class="apps" id="buttons"></div>
+<div class="apps">
+  <button id="addThingBtn" onclick="location.href='add.html'">
+    <span class="material-icons">add_circle</span> Add
+  </button>
+</div>
+<div class="score" id="score"></div>
+<div class="results" id="thingsList"></div>
+<div class="log" id="log"></div>
+
+<script src="app.js" defer></script>
+</body>
+</html>
+
+</section>
+
+<!-- Add Section -->
+<section id="add-section" style="display:none;">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:,">
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="apps/locationPickerWrapper.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+<h2>Add</h2>
+<input id="search-box" placeholder="Search existing things..." oninput="searchThings()">
+<div id="search-results"></div>
+<input id="thing-name" type="text" placeholder="Name of the thing (e.g. Universe)">
+<select id="thing-visibility">
+  <option value="private">Private</option>
+  <option value="group">Group</option>
+  <option value="public">Public</option>
+</select>
+<div id="details-container">
+  <div>
+    <input placeholder="Key (e.g. Hello)" type="text">
+    <textarea placeholder="Value (e.g. World)"></textarea>
+  </div>
+</div>
+<button onclick="addDetail()">Add Detail</button>
+<div id="media-container">
+  <input placeholder="Link to image or file (e.g. https://...)" type="url">
+</div>
+<button onclick="addMediaLink()">Add Media Link</button>
+<table><tr>
+  <td style="width: 40px;"><input type="checkbox" id="isLocationSource" onchange="toggleDropdownState()"></td>
+  <td><label for="isLocationSource">Use this as a location anchor for related things</label></td>
+</tr></table>
+<div id="location-section" style="margin-bottom: 10px;"></div>
+<table><tr>
+  <td style="width: 40px;"><input type="checkbox" id="allowCopy"></td>
+  <td><label for="allowCopy">Allow others to duplicate and customize this Thing</label></td>
+</tr></table>
+<button onclick="submitThing()">Add</button>
+</body>
+</html>
+
+</section>
+
+<!-- Edit Section -->
+<section id="edit-section" style="display:none;">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Edit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:,">
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+  <script src="apps/locationPickerWrapper.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <h2>Edit</h2>
+
+  <input id="thing-name" type="text" placeholder="Name of the thing (e.g. Universe)">
+
+  <select id="thing-visibility">
+    <option value="private">Private</option>
+    <option value="group">Group</option>
+    <option value="public">Public</option>
+  </select>
+
+  <div id="details-container"></div>
+  <button onclick="addDetail()">Add Detail</button>
+
+  <div id="media-container"></div>
+  <button onclick="addMediaLink()">Add Media Link</button>
+
+  <table>
+    <tr>
+      <td style="width: 40px;"><input type="checkbox" id="isLocationSource" onchange="toggleDropdownState()"></td>
+      <td><label for="isLocationSource">Use this as a location anchor for related things</label></td>
+    </tr>
+  </table>
+
+  <div id="location-section" style="margin-bottom: 10px;"></div>
+
+  <table>
+    <tr>
+      <td style="width: 40px;"><input type="checkbox" id="allowCopy"></td>
+      <td><label for="allowCopy">Allow others to duplicate and customize this Thing</label></td>
+    </tr>
+  </table>
+
+  <button id="saveBtn">💾 Save Changes</button>
+  <button id="deleteBtn" class="delete" onclick="deleteThing()">🗑️ Delete Thing</button>
+</body>
+</html>
+
+</section>
+
+<script>
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAatek1caogYhCY0rXj9YrGC32E0lRJtUs",
+  authDomain: "whereapp-ideasdesai.firebaseapp.com",
+  projectId: "whereapp-ideasdesai"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let userId = null;
+window.addEventListener('DOMContentLoaded', () => {
+  auth.signInAnonymously().then(res => {
+    userId = res.user.uid;
+    initPage();
+  });
+});
+
+function initPage() {
+  const path = window.location.pathname;
+  const page = path.split("/").pop();
+  if (page === "" || page === "index.html" || path.endsWith("/kohthai/")) {
+    initIndex();
+  } else if (page === "add.html") {
+    initAdd();
+  } else if (page === "edit.html") {
+    initEdit();
+  } else if (page === "search.html") {
+    initSearch();
+  }
+}
+
+function addDetail() {
+  const container = document.getElementById("details-container");
+  const div = document.createElement("div");
+  div.innerHTML = `<input placeholder="Key" type="text"><textarea placeholder="Value"></textarea>`;
+  container.appendChild(div);
+}
+
+function addMediaLink() {
+  const container = document.getElementById("media-container");
+  const input = document.createElement("input");
+  input.placeholder = "Add link to image or file";
+  input.type = "url";
+  container.appendChild(input);
+}
+
+function initEdit() {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get("id");
+  if (!id) return alert("Missing Thing ID");
+
+  db.collection("things").doc(id).get().then(doc => {
+    if (!doc.exists) return alert("Thing not found");
+    const data = doc.data();
+
+    document.getElementById("thing-name").value = data.name || "";
+    document.getElementById("thing-visibility").value = data.visibility || "private";
+    document.getElementById("allowCopy").checked = !!data.allowCopy;
+    document.getElementById("isLocationSource").checked = !!data.isLocationSource;
+
+    const detailsContainer = document.getElementById("details-container");
+    detailsContainer.innerHTML = "";
+    const details = Array.isArray(data.flexibutes) ? data.flexibutes : Object.entries(data.flexibutes || {}).map(([key, val]) => ({ key, val }));
+    details.forEach(({ key, val }) => {
+      const div = document.createElement("div");
+      div.innerHTML = `<input type="text" value="${key}" placeholder="Key"><textarea placeholder="Value">${val}</textarea>`;
+      detailsContainer.appendChild(div);
+    });
+
+    const mediaContainer = document.getElementById("media-container");
+    mediaContainer.innerHTML = "";
+    (data.media || []).forEach(url => {
+      const input = document.createElement("input");
+      input.type = "url";
+      input.value = url;
+      input.placeholder = "Link to image or file (e.g. https://...)";
+      mediaContainer.appendChild(input);
+    });
+
+    window.loadLocationPickerIfReady?.("location-section", userId, db, data.location);
+    populateLocationSourceDropdown(data.location?.sourceId || "");
+  });
+
+  document.getElementById("saveBtn")?.addEventListener("click", async () => {
+    const name = document.getElementById("thing-name").value.trim();
+    const visibility = document.getElementById("thing-visibility").value;
+    const allowCopy = document.getElementById("allowCopy").checked;
+    const isLocationSource = document.getElementById("isLocationSource").checked;
+
+    const flexibutes = Array.from(document.querySelectorAll("#details-container > div")).map(div => {
+      const key = div.querySelector("input").value.trim();
+      const val = div.querySelector("textarea").value.trim();
+      return key ? { key, val } : null;
+    }).filter(Boolean);
+
+    const media = Array.from(document.querySelectorAll("#media-container input")).map(inp => inp.value.trim()).filter(Boolean);
+
+    let location = null;
+    if (isLocationSource && typeof window.getPickedLocation === 'function') {
+      location = window.getPickedLocation();
+    } else {
+      location = getSelectedLocation();
+    }
+
+    try {
+      await db.collection("things").doc(id).update({
+        name,
+        visibility,
+        allowCopy,
+        isLocationSource,
+        flexibutes,
+        media,
+        location
+      });
+      alert("Changes saved.");
+      window.location.href = "index.html";
+    } catch (err) {
+      console.error("Failed to save:", err);
+      alert("Save failed. Check console.");
+    }
+  });
+
+  document.querySelector("button[onclick='addDetail()']")?.addEventListener("click", addDetail);
+  document.querySelector("button[onclick='addMediaLink()']")?.addEventListener("click", addMediaLink);
+  document.getElementById("deleteBtn")?.addEventListener("click", deleteThing);
+}
+
+function populateLocationSourceDropdown(selectedId = "") {
+  const select = document.getElementById("locationSourceSelect");
+  if (!select) return;
+  select.innerHTML = '<option value="">Select from saved location sources...</option>';
+  db.collection("things")
+    .where("userId", "==", userId)
+    .where("isLocationSource", "==", true)
+    .get()
+    .then(snapshot => {
+      snapshot.forEach(doc => {
+        const option = document.createElement("option");
+        option.value = doc.id;
+        option.textContent = doc.data().name || "Unnamed Thing";
+        if (doc.id === selectedId) option.selected = true;
+        select.appendChild(option);
+      });
+    });
+}
+
+
+
+
+// Basic navigation logic
+function showSection(sectionId) {
+    document.getElementById('home-section').style.display = 'none';
+    document.getElementById('add-section').style.display = 'none';
+    document.getElementById('edit-section').style.display = 'none';
+    document.getElementById(sectionId).style.display = 'block';
+}
+</script>
+
+</body>
+</html>
