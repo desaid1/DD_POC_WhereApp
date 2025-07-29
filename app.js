@@ -205,7 +205,6 @@ function initIndex() {
   const thingsList = document.getElementById('thingsList');
   thingsList.innerHTML = '<div>Loading...</div>';
   db.collection('things')
-    .where('userId', '==', userId)
     .orderBy('created', 'desc')
     .get()
     .then(snapshot => {
