@@ -190,11 +190,59 @@ async function searchThings() {
     return;
   }
 
-  // Render results
+  // Render results as clickable cards with details and edit hint (mobile/web friendly)
   const ul = document.createElement('ul');
+  ul.style.listStyle = 'none';
+  ul.style.padding = '0';
+  ul.style.margin = '0';
+
   for (const thing of results) {
     const li = document.createElement('li');
-    li.textContent = thing.name || '(Unnamed Thing)';
+    li.style.marginBottom = '18px';
+    li.style.border = '1px solid #e0e0e0';
+    li.style.borderRadius = '10px';
+    li.style.padding = '12px';
+    li.style.background = '#fafbfc';
+    li.style.boxShadow = '0 1px 4px rgba(0,0,0,0.03)';
+    li.style.transition = 'background 0.2s';
+
+    // Main clickable link
+    const link = document.createElement('a');
+    link.href = `edit.html?id=${thing.id}`;
+    link.textContent = thing.name || '(Unnamed Thing)';
+    link.style.textDecoration = 'underline';
+    link.style.cursor = 'pointer';
+    link.style.fontWeight = 'bold';
+    link.style.fontSize = '1.1em';
+    link.style.display = 'block';
+    link.style.marginBottom = '6px';
+    link.style.color = '#222';
+
+    // Details/flexibutes
+    let detailsHtml = '';
+    if (thing.flexibutes) {
+      const flexArr = Array.isArray(thing.flexibutes)
+        ? thing.flexibutes
+        : Object.entries(thing.flexibutes).map(([key, val]) => ({ key, val }));
+      detailsHtml = flexArr.map(f => `<div style="font-size:0.98em;"><b>${f.key}:</b> ${f.val}</div>`).join('');
+    }
+
+    // Hint
+    const hint = document.createElement('div');
+    hint.textContent = 'Click to edit this thing';
+    hint.style.fontSize = '0.95em';
+    hint.style.color = '#888';
+    hint.style.marginTop = '6px';
+
+    // Compose
+    li.appendChild(link);
+    if (detailsHtml) {
+      const detailsDiv = document.createElement('div');
+      detailsDiv.innerHTML = detailsHtml;
+      detailsDiv.style.margin = '2px 0 4px 0';
+      li.appendChild(detailsDiv);
+    }
+    li.appendChild(hint);
     ul.appendChild(li);
   }
   resultsDiv.appendChild(ul);
