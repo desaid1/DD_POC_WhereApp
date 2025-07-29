@@ -201,4 +201,47 @@ async function searchThings() {
   resultsDiv.appendChild(ul);
 }
 
+// Placeholder for Add page initialization
+function initAdd() {
+  // Any setup for the Add page can go here
+}
+
+// Function to submit a new thing to Firestore
+async function submitThing() {
+  const name = document.getElementById("thing-name").value.trim();
+  const visibility = document.getElementById("thing-visibility").value;
+  const allowCopy = document.getElementById("allowCopy").checked;
+  const isLocationSource = document.getElementById("isLocationSource").checked;
+
+  // Collect details
+  const flexibutes = Array.from(document.querySelectorAll("#details-container > div")).map(div => {
+    const key = div.querySelector("input").value.trim();
+    const val = div.querySelector("textarea").value.trim();
+    return key ? { key, val } : null;
+  }).filter(Boolean);
+
+  // Collect media links
+  const media = Array.from(document.querySelectorAll("#media-container input")).map(inp => inp.value.trim()).filter(Boolean);
+
+  // You can add location logic here if needed
+
+  try {
+    await db.collection("things").add({
+      userId,
+      name,
+      visibility,
+      allowCopy,
+      isLocationSource,
+      flexibutes,
+      media,
+      created: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    alert("Thing added!");
+    window.location.href = "index.html";
+  } catch (err) {
+    console.error("Failed to add thing:", err);
+    alert("Failed to add thing. Check console for details.");
+  }
+}
+
 
