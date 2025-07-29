@@ -226,7 +226,7 @@ function initIndex() {
         if (data.userId === userId) {
           actions = `
             <div class='thing-actions'>
-              <a href="edit.html?id=${doc.id}" class="edit-btn">Edit</a>
+              <button class="edit-btn" data-id="${doc.id}">Edit</button>
               <button class="delete-btn" data-id="${doc.id}">Delete</button>
             </div>
           `;
@@ -253,6 +253,13 @@ function initIndex() {
             alert('Failed to delete.');
             console.error(err);
           }
+        });
+      });
+      // Attach edit handlers
+      document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const id = btn.getAttribute('data-id');
+          window.location.href = `edit.html?id=${id}`;
         });
       });
     })
