@@ -131,7 +131,6 @@ function populateLocationSourceDropdown(selectedId = "") {
   if (!select) return;
   select.innerHTML = '<option value="">Select from saved location sources...</option>';
   db.collection("things")
-    .where("userId", "==", userId)
     .where("isLocationSource", "==", true)
     .get()
     .then(snapshot => {
