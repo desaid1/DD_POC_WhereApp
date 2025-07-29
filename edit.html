@@ -29,24 +29,16 @@
 
   <div id="media-container"></div>
   <button onclick="addMediaLink()">Add Media Link</button>
-
-  <table>
-    <tr>
-      <td style="width: 40px;"><input type="checkbox" id="isLocationSource" onchange="toggleDropdownState()"></td>
-      <td><label for="isLocationSource">Use this as a location anchor for related things</label></td>
-    </tr>
-  </table>
-
+  <div class="form-group checkbox-row">
+    <input type="checkbox" id="isLocationSource" onchange="toggleDropdownState()">
+    <label for="isLocationSource">Use this as a location anchor for related things</label>
+  </div>
   <div id="location-section" style="margin-bottom: 10px;"></div>
   <select id="locationSourceSelect" style="margin-bottom: 10px;"></select>
-
-  <table>
-    <tr>
-      <td style="width: 40px;"><input type="checkbox" id="allowCopy"></td>
-      <td><label for="allowCopy">Allow others to duplicate and customize this Thing</label></td>
-    </tr>
-  </table>
-
+  <div class="form-group checkbox-row">
+    <input type="checkbox" id="allowCopy">
+    <label for="allowCopy">Allow others to duplicate and customize this Thing</label>
+  </div>
   <button id="saveBtn">💾 Save Changes</button>
   <button id="deleteBtn" class="delete" onclick="deleteThing()">🗑️ Delete Thing</button>
 </body>

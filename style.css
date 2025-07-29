@@ -213,3 +213,111 @@ td {
     padding: 8px 0;
   }
 }
+
+/* Mobile-specific tweaks for compactness */
+@media (max-width: 480px) {
+  body {
+    padding: 10px 2px;
+    max-width: 100vw;
+  }
+  h1, h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+  input, textarea, select, button {
+    font-size: 15px;
+    padding: 7px 10px;
+    margin-bottom: 8px;
+  }
+  #details-container div,
+  #media-container div {
+    margin-bottom: 8px;
+  }
+  .apps {
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .thing {
+    padding: 8px;
+    font-size: 15px;
+  }
+  .media-img {
+    max-width: 80px;
+  }
+  /* Checkbox and label alignment */
+  table, tr, td {
+    display: block;
+    width: 100%;
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+  table {
+    margin-bottom: 6px;
+  }
+  td {
+    padding: 0 0 4px 0;
+    border: none;
+  }
+  /* Flexbox for checkbox/label pairs */
+  #isLocationSource, #allowCopy {
+    width: auto;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  label[for="isLocationSource"], label[for="allowCopy"] {
+    display: inline-block;
+    vertical-align: middle;
+    font-weight: normal;
+    margin: 0;
+  }
+}
+
+/* Device-friendly improvements for mobile */
+@media (max-width: 480px) {
+  .form-group {
+    background: #f8f8f8;
+    border-radius: 10px;
+    padding: 10px 8px;
+    margin-bottom: 12px;
+  }
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .checkbox-row input[type="checkbox"] {
+    margin-right: 8px;
+    width: 18px;
+    height: 18px;
+  }
+  label {
+    margin-bottom: 0;
+    font-size: 15px;
+  }
+  button, .edit-btn, .delete-btn {
+    width: 100%;
+    margin-bottom: 8px;
+    padding: 10px 0;
+  }
+  input, textarea, select {
+    min-height: 36px;
+  }
+  /* Reduce vertical spacing further */
+  input, textarea, select, button {
+    margin-bottom: 6px;
+  }
+}
+
+/* Tablet/foldable: allow wider form */
+@media (min-width: 481px) and (max-width: 900px) {
+  body {
+    max-width: 90vw;
+    padding: 30px 10vw;
+  }
+  .form-group {
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
