@@ -145,4 +145,60 @@ function populateLocationSourceDropdown(selectedId = "") {
     });
 }
 
+// Advanced search for things by name or flexibutes
+async function searchThings() {
+  const query = document.getElementById('search-box').value.trim().toLowerCase();
+  const resultsDiv = document.getElementById('search-results');
+  resultsDiv.innerHTML = '';
+  if (!query) return;
+
+  // Fetch all things for the current user
+  let snapshot;
+  try {
+    snapshot = await db.collection('things')
+      .where('userId', '==', userId)
+      .get();
+  } catch (err) {
+    resultsDiv.textContent = 'Error fetching data.';
+    console.error(err);
+    return;
+  }
+
+  const results = [];
+  snapshot.forEach(doc => {
+    const data = doc.data();
+    // Search in name
+    if ((data.name || '').toLowerCase().includes(query)) {
+      results.push({ id: doc.id, ...data });
+      return;
+    }
+    // Search in flexibutes (details)
+    if (data.flexibutes) {
+      let flexArr = Array.isArray(data.flexibutes)
+        ? data.flexibutes
+        : Object.entries(data.flexibutes).map(([key, val]) => ({ key, val }));
+      for (const { key, val } of flexArr) {
+        if ((key && key.toLowerCase().includes(query)) || (val && val.toLowerCase().includes(query))) {
+          results.push({ id: doc.id, ...data });
+          return;
+        }
+      }
+    }
+  });
+
+  if (results.length === 0) {
+    resultsDiv.textContent = 'No matches found.';
+    return;
+  }
+
+  // Render results
+  const ul = document.createElement('ul');
+  for (const thing of results) {
+    const li = document.createElement('li');
+    li.textContent = thing.name || '(Unnamed Thing)';
+    ul.appendChild(li);
+  }
+  resultsDiv.appendChild(ul);
+}
+
 
