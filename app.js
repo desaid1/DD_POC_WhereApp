@@ -201,6 +201,69 @@ async function searchThings() {
   resultsDiv.appendChild(ul);
 }
 
+function initIndex() {
+  const thingsList = document.getElementById('thingsList');
+  thingsList.innerHTML = '<div>Loading...</div>';
+  db.collection('things')
+    .where('userId', '==', userId)
+    .orderBy('created', 'desc')
+    .get()
+    .then(snapshot => {
+      if (snapshot.empty) {
+        thingsList.innerHTML = '<div>No things found.</div>';
+        return;
+      }
+      const cards = [];
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        let flexHtml = '';
+        if (data.flexibutes) {
+          const flexArr = Array.isArray(data.flexibutes)
+            ? data.flexibutes
+            : Object.entries(data.flexibutes).map(([key, val]) => ({ key, val }));
+          flexHtml = flexArr.map(f => `<div class='flex-row'><b>${f.key}:</b> ${f.val}</div>`).join('');
+        }
+        // Edit and Delete buttons for owner
+        let actions = '';
+        if (data.userId === userId) {
+          actions = `
+            <div class='thing-actions'>
+              <a href="edit.html?id=${doc.id}" class="edit-btn">Edit</a>
+              <button class="delete-btn" data-id="${doc.id}">Delete</button>
+            </div>
+          `;
+        }
+        cards.push(`
+          <div class='thing-card' data-id='${doc.id}'>
+            <h3>${data.name || '(Unnamed Thing)'}</h3>
+            <div class='thing-meta'>Visibility: ${data.visibility || 'private'}</div>
+            ${flexHtml ? `<div class='thing-details'>${flexHtml}</div>` : ''}
+            ${actions}
+          </div>
+        `);
+      });
+      thingsList.innerHTML = cards.join('');
+      // Attach delete handlers
+      document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const id = btn.getAttribute('data-id');
+          if (!confirm('Are you sure you want to delete this thing?')) return;
+          try {
+            await db.collection('things').doc(id).delete();
+            btn.closest('.thing-card').remove();
+          } catch (err) {
+            alert('Failed to delete.');
+            console.error(err);
+          }
+        });
+      });
+    })
+    .catch(err => {
+      thingsList.innerHTML = '<div>Error loading things.</div>';
+      console.error(err);
+    });
+}
+
 // Placeholder for Add page initialization
 function initAdd() {
   // Any setup for the Add page can go here
