@@ -148,3 +148,68 @@ td {
 .tag.public { background-color: #4caf50; color: white; }
 .tag.group { background-color: #ff9800; color: white; }
 .tag.private { background-color: #f44336; color: white; }
+
+/* Responsive Design: Tablet */
+@media (min-width: 600px) {
+  body {
+    max-width: 700px;
+    padding: 40px 40px;
+  }
+  h1, h2 {
+    font-size: 28px;
+  }
+  .apps {
+    gap: 18px;
+  }
+  .thing {
+    padding: 20px;
+    font-size: 18px;
+  }
+  .media-img {
+    max-width: 180px;
+  }
+}
+
+/* Responsive Design: Desktop */
+@media (min-width: 900px) {
+  body {
+    max-width: 1100px;
+    padding: 60px 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .apps {
+    flex-wrap: nowrap;
+    gap: 24px;
+    justify-content: flex-start;
+  }
+  .results, .log {
+    max-width: 900px;
+  }
+  .thing {
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: 20px;
+  }
+  table {
+    font-size: 18px;
+  }
+  input, textarea, select, button {
+    font-size: 18px;
+  }
+}
+
+/* Make tables more responsive */
+@media (max-width: 599px) {
+  table, thead, tbody, th, td, tr {
+    display: block;
+    width: 100%;
+  }
+  td {
+    border: none;
+    border-bottom: 1px solid #eee;
+    padding: 8px 0;
+  }
+}
