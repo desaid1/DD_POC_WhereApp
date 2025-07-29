@@ -20,7 +20,8 @@ input, textarea, select {
   margin-bottom: 12px;
   width: 100%;
 }
-button {
+/* Unified button styles */
+button, .edit-btn, .delete-btn {
   background-color: #A8D5BA;
   color: white;
   border: none;
@@ -30,13 +31,21 @@ button {
   transition: background-color 0.3s ease;
   cursor: pointer;
   margin-bottom: 12px;
+  display: inline-block;
 }
-button:hover {
+button:hover, .edit-btn:hover, .delete-btn:hover {
   background-color: #91c3aa;
 }
-button.delete {
+.edit-btn {
+  background-color: #A8D5BA;
+  color: white;
+}
+.delete-btn {
   background-color: #f44336;
   color: white;
+}
+.delete-btn:hover {
+  background-color: #d32f2f;
 }
 label {
   font-weight: bold;
